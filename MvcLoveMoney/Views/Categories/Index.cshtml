@@ -1,57 +1,168 @@
 @model IEnumerable<MvcLoveMoney.Models.Category>
+@using MvcLoveMoney.ViewComponents
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Category";
 }
 
-<h1>Index</h1>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1>Categories Management</h1>
+        <p class="text-muted">Organize spending and revenue buckets for transaction tagging and reporting</p>
+    </div>
+    <button type="button" class="btn btn-success" onclick="openCreateCategory()">
+        <i class="bi bi-plus-lg"></i> Category
+    </button>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.CategoryType)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Icon)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ThemeColor)
-            </th>
-            <th>
-                @Html.DisplayName("Action")
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(model => item.CategoryType)
-            </td>
-            <td>
-                @Html.DisplayFor(model => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(model => item.Icon)
-            </td>
-            <td>
-                @Html.DisplayFor(model => item.ThemeColor)
-            </td>
-            
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+<ul class="nav nav-tabs mb-3" id="categoryTabs">
+    <li class="nav-item">
+        <button type="button" class="nav-link active" onclick="filterCategories(this, '')">All</button>
+    </li>
+    <li class="nav-item">
+        <button type="button" class="nav-link" onclick="filterCategories(this, 'Expense')">Expense</button>
+    </li>
+    <li class="nav-item">
+        <button type="button" class="nav-link" onclick="filterCategories(this, 'Income')">Income</button>
+    </li>
+</ul>
+
+<!-- Bảng danh sách: lần đầu do ViewComponent vẽ, sau đó Ajax thay mới -->
+<div id="divCategoryList">
+    @await Component.InvokeAsync("CategoryList")
+</div>
+
+<!-- Modal dùng chung cho Thêm và Sửa -->
+<div class="modal fade" id="categoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="categoryModalTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="categoryModalBody"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+
+<script>
+
+    // ---------- Current filter: "" = All, "Expense", "Income" ----------
+        let currentType = "";
+
+    // ---------- Icon picker (works for forms loaded via Ajax) ----------
+        $(document).on('click', '.icons-list-item', function () {
+            let icon = $(this).data('icon');                               // e.g. "bx bx-gift"
+
+            $('#Icon').val(icon);                                          // write to hidden input → sent to server
+            $('#iconPreview').attr('class', icon + ' fs-3 align-middle');  // update preview
+
+            $('.icons-list-item').removeClass('active');                   // un-highlight others
+            $(this).addClass('active');                                    // highlight selected
+        });
+
+    function openModal(title, html) {
+        document.getElementById("categoryModalTitle").innerText = title;
+        document.getElementById("categoryModalBody").innerHTML = html;
+        bootstrap.Modal.getOrCreateInstance(document.getElementById("categoryModal")).show();
+    }
+
+    function closeModal() {
+        bootstrap.Modal.getOrCreateInstance(document.getElementById("categoryModal")).hide();
+    }
+
+    function openCreateCategory() {
+        $.ajax({
+            url: '/Categories/Create',
+            type: 'GET',
+            success: function (html) { openModal("Add category", html); },
+            error: function (xhr) { alert("Error " + xhr.status); }
+        });
+    }
+
+    function openEditCategory(id) {
+        $.ajax({
+            url: '/Categories/Edit/' + id,
+            type: 'GET',
+            success: function (html) { openModal("Edit category", html); },
+            error: function (xhr) { alert("Error " + xhr.status); }
+        });
+    }
+
+    function saveCategory() {
+        let form = $('#formCategory');
+        $.ajax({
+            url: form.attr('action'),     // tự lấy /Categories/Create hoặc /Categories/Edit/5
+            type: 'POST',
+            data: form.serialize(),       // tự gom tất cả ô nhập + token
+            success: function (res) {
+                if (res.isOK === true) {
+                    closeModal();
+                    reloadCategories();
+                } else {
+                    // server trả lại form kèm lỗi → hiện lại trong modal
+                    document.getElementById("categoryModalBody").innerHTML = res;
+                }
+            },
+            error: function (xhr) { alert("Error " + xhr.status); }
+        });
+    }
+
+    function openDeleteCategory(id) {
+    $.ajax({
+        url: '/Categories/Delete/' + id,
+        type: 'GET',
+        success: function (html) { openModal("Delete category", html); },
+        error: function (xhr) { alert("Error " + xhr.status); }
+        });
+    }
+
+    function deleteCategory(id) {
+        let token = document.querySelector("#categoryModalBody input[name='__RequestVerificationToken']")?.value;
+
+        $.ajax({
+            url: '/Categories/Delete',
+            type: 'POST',
+            data: { id: id, __RequestVerificationToken: token },
+            success: function (res) {
+                if (res.isOK === true) {
+                    closeModal();
+                    reloadCategories();
+                } else {
+                    document.getElementById("deleteError").innerText = res.message;
+                }
+            },
+            error: function (xhr) { alert("Errorgo " + xhr.status); }
+        });
+    }
+
+    function reloadCategories() {
+         $.ajax({
+            url: '/Categories/Reload',
+            type: 'GET',
+            data: { type: currentType },          // "" → null → All
+            success: function (html) {
+                document.getElementById("divCategoryList").innerHTML = html;
+            },
+            error: function (xhr, status, error) {
+                console.error("Error:", status, error);
+        }
+    });
+    }
+
+   function filterCategories(button, type) {
+        // Highlight the clicked tab
+        document.querySelectorAll('#categoryTabs .nav-link')
+                .forEach(function (b) { b.classList.remove('active'); });
+        button.classList.add('active');
+
+        // Remember the filter and reload the table
+        currentType = type;
+        reloadCategories();
+    }
+
+</script>
+
 }
-    </tbody>
-</table>

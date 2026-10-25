@@ -1,0 +1,50 @@
+﻿@model List<CategoryVM>
+
+@if(!Model.Any())
+{
+    <p class="text-muted">Category Empty</p>
+}
+else
+{
+   <div class="table-responsive">
+        <table class="table text-nowrap table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col">Type</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Icon</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach(var item in Model)
+                {
+                    <tr>
+                        <th scope="row">
+                            <div class="d-flex align-items-center">
+                               @item.CategoryType
+                            </div>
+                        </th>
+                        <td><span class="bg-success-transparent">@item.Name</span></td>
+                        <td>
+                            <i class="@item.Icon fs-4" style="color:@item.ThemeColor"></i>
+                        </td>
+                        <td>
+                            <div class="hstack gap-2 flex-wrap">
+                                <button type="button" class="btn btn-sm btn-outline-warning"
+                                        onclick="openEditCategory(@item.Id)" title="Edit">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                        onclick="openDeleteCategory(@item.Id)" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+</div>
+    }
+

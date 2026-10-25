@@ -1,8 +1,10 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using MvcLoveMoney.Models;
 using MvcLoveMoney.Data;
+using MvcLoveMoney.Enums;
+using MvcLoveMoney.Models;
+using MvcLoveMoney.ViewModels;
 
 public class CategoriesController : Controller
 {
@@ -14,9 +16,21 @@ public class CategoriesController : Controller
     }
 
     // GET: CATEGORYS
-    public async Task<IActionResult> Index()    
+    //public async Task<IActionResult> Index()
+    //{
+    //    return View(await _context.Categories.ToListAsync());
+    //}
+
+    public IActionResult Index()
     {
-        return View(await _context.Categories.ToListAsync());
+        return View();
+    }
+
+
+    // Ajax gọi để vẽ lại bảng
+    public IActionResult Reload(TransactionType? type)
+    {
+        return ViewComponent("CategoryList", new { type });
     }
 
     // GET: CATEGORYS/Details/5
@@ -37,10 +51,26 @@ public class CategoriesController : Controller
         return View(category);
     }
 
+
+    // Kiểm tra đã có danh mục khác cùng Tên + Loại chưa
+    private async Task CheckDuplicateAsync(CategoryVM categoryVM)
+    {
+        bool isDuplicate = await _context.Categories.AnyAsync(c =>
+            c.Name == categoryVM.Name &&
+            c.CategoryType == categoryVM.CategoryType &&
+            c.Id != categoryVM.Id);               // bỏ qua chính nó (khi Edit)
+
+        if (isDuplicate)
+        {
+            ModelState.AddModelError(nameof(Category.Name),
+                "A category with this name already exists for this type.");
+        }
+    }
+
     // GET: CATEGORYS/Create
     public IActionResult Create()
     {
-        return View();
+        return PartialView("CategoryForm", new CategoryVM());
     }
 
     // POST: CATEGORYS/Create
@@ -48,15 +78,41 @@ public class CategoriesController : Controller
     // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("Id,CategoryType,Name,Icon,ThemeColor,Transactions")] Category category)
+    public async Task<IActionResult> Create(CategoryVM categoryVM)
     {
+        categoryVM.Name = categoryVM.Name?.Trim() ?? string.Empty;
+
+        await CheckDuplicateAsync(categoryVM);
+
         if (ModelState.IsValid)
         {
-            _context.Add(category);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            //_context.Add(category);
+            //await _context.SaveChangesAsync();
+            //return RedirectToAction(nameof(Index));
+
+            try
+            {
+                // Map ViewModel to entity
+                var newCategory = new Category
+                {
+                    CategoryType = categoryVM.CategoryType,
+                    Name = categoryVM.Name,
+                    Icon = categoryVM.Icon,
+                    ThemeColor = categoryVM.ThemeColor
+                };
+                await _context.Categories.AddAsync(newCategory);
+                await _context.SaveChangesAsync();
+                return Json(new { isOK = true, message = "Created successfully" });
+            } 
+            catch (DbUpdateException)
+            {
+                ModelState.AddModelError("", "Could not save data. Please try again.");
+            }
         }
-        return View(category);
+
+        return PartialView("CategoryForm", categoryVM);
+
+        //return View(category);
     }
 
     // GET: CATEGORYS/Edit/5
@@ -67,12 +123,25 @@ public class CategoriesController : Controller
             return NotFound();
         }
 
-        var category = await _context.Categories.FindAsync(id);
-        if (category == null)
+        var categoryVM = await _context.Categories
+               .Where(c => c.Id == id)
+               .Select(c => new CategoryVM
+               {
+                   Id = c.Id,
+                   CategoryType = c.CategoryType,
+                   Name = c.Name,
+                   Icon = c.Icon,
+                   ThemeColor = c.ThemeColor
+               })
+               .SingleOrDefaultAsync();
+
+        if (categoryVM == null)
         {
             return NotFound();
         }
-        return View(category);
+
+        return PartialView("CategoryForm", categoryVM);
+        //return View(category);
     }
 
     // POST: CATEGORYS/Edit/5
@@ -80,34 +149,35 @@ public class CategoriesController : Controller
     // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int? id, [Bind("Id,CategoryType,Name,Icon,ThemeColor,Transactions")] Category category)
+    public async Task<IActionResult> Edit(CategoryVM categoryVM)
     {
-        if (id != category.Id)
-        {
-            return NotFound();
-        }
+
+        categoryVM.Name = categoryVM.Name?.Trim() ?? string.Empty;
+        await CheckDuplicateAsync(categoryVM);
 
         if (ModelState.IsValid)
         {
+            var category = await _context.Categories.FindAsync(categoryVM.Id);
+            if (category == null) return NotFound();
+
+            // Copy values from ViewModel to entity
+            category.CategoryType = categoryVM.CategoryType;
+            category.Name = categoryVM.Name;
+            category.Icon = categoryVM.Icon;
+            category.ThemeColor = categoryVM.ThemeColor;
+
             try
             {
-                _context.Update(category);
                 await _context.SaveChangesAsync();
+                return Json(new { isOK = true, message = "Updated successfully" });
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!CategoryExists(category.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                ModelState.AddModelError("", "Could not save data. Please try again.");
             }
-            return RedirectToAction(nameof(Index));
         }
-        return View(category);
+        return PartialView("CategoryForm", categoryVM);
+        //return View(category);
     }
 
     // GET: CATEGORYS/Delete/5
@@ -118,14 +188,25 @@ public class CategoriesController : Controller
             return NotFound();
         }
 
-        var category = await _context.Categories
-            .FirstOrDefaultAsync(m => m.Id == id);
-        if (category == null)
-        {
-            return NotFound();
-        }
+        //var category = await _context.Categories
+        //    .FirstOrDefaultAsync(m => m.Id == id);
 
-        return View(category);
+        var categoryVM = await _context.Categories
+               .Where(c => c.Id == id)
+               .Select(c => new CategoryVM
+               {
+                   Id = c.Id,
+                   CategoryType = c.CategoryType,
+                   Name = c.Name,
+                   Icon = c.Icon,
+                   ThemeColor = c.ThemeColor
+               })
+               .SingleOrDefaultAsync();
+
+
+        if (categoryVM == null) return NotFound();
+
+        return PartialView(categoryVM);
     }
 
     // POST: CATEGORYS/Delete/5
@@ -134,17 +215,25 @@ public class CategoriesController : Controller
     public async Task<IActionResult> DeleteConfirmed(int? id)
     {
         var category = await _context.Categories.FindAsync(id);
-        if (category != null)
+        if (category == null)
+            return Json(new { isOK = false, message = "Category not found." });
+
+        // Kiểm tra danh mục có đang được dùng không
+        bool isUsed = await _context.Transactions.AnyAsync(t => t.CategoryId == id);
+        if (isUsed)
+            return Json(new { isOK = false, message = "Cannot delete: this category is used by one or more transactions." });
+
+        try
         {
             _context.Categories.Remove(category);
+            await _context.SaveChangesAsync();
+            return Json(new { isOK = true, message = "Deleted successfully" });
+
         }
-
-        await _context.SaveChangesAsync();
-        return RedirectToAction(nameof(Index));
+        catch (DbUpdateException)
+        {
+            return Json(new { isOK = false, message = "Could not delete data. Please try again." });
+        }
     }
 
-    private bool CategoryExists(int? id)
-    {
-        return _context.Categories.Any(e => e.Id == id);
-    }
 }

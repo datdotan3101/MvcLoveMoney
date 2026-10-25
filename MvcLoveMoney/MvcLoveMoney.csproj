@@ -22,7 +22,6 @@
 
   <ItemGroup>
     <Folder Include="Data\Configurations\" />
-    <Folder Include="ViewComponents\" />
     <Folder Include="wwwroot\assets\libs\chart.js\docs\" />
     <Folder Include="wwwroot\assets\libs\choices.js\src\" />
     <Folder Include="wwwroot\assets\libs\datatables.net-bs5\types\" />
