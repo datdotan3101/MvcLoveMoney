@@ -1,0 +1,80 @@
+﻿@model TransactionVM
+@{
+    bool isCreate          = Model == null || Model.Id == 0;
+    string actionString    = isCreate ? "Create" : "Edit";
+    string buttonString    = isCreate ? "Create" : "Update";
+    string onclickFunction = isCreate ? "createTransaction();" : "updateTransaction();";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <form id="formTransaction" asp-action="@actionString" method="post" onsubmit="return false;">
+            @if (!isCreate)
+            {
+                <input type="hidden" asp-for="Id" />
+            }
+
+            <div asp-validation-summary="All" class="text-danger"></div>
+            
+            <div class="mb-3">
+                <label class="form-label">Type</label>
+
+                <!-- Hidden input: holds the selected type, sent to the server -->
+                <input type="hidden" asp-for="TransactionType" />
+
+                <!-- Tabs to choose the type -->
+                <ul class="nav nav-pills nav-justified type-tabs">
+                    <li class="nav-item">
+                        <button type="button"
+                                class="nav-link @(Model?.TransactionType == TransactionType.Expense ? "active" : "")"
+                                data-type="Expense"
+                                onclick="selectTransactionType(this, 'Expense')">
+                            <i class="ri-arrow-up-circle-line me-1"></i> Expense
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button type="button"
+                                class="nav-link @(Model?.TransactionType == TransactionType.Income ? "active" : "")"
+                                data-type="Income"
+                                onclick="selectTransactionType(this, 'Income')">
+                            <i class="ri-arrow-down-circle-line me-1"></i> Income
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            
+
+            <div class="mb-3">
+                <label asp-for="CategoryId" class="form-label"></label>
+                <select asp-for="CategoryId" class="form-select" asp-items="Model?.Categories">
+                    <option value="">-- Select category --</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Amount" class="form-label"></label>
+                <input asp-for="Amount" type="number" min="1" step="1000" asp-format="{0:0}"
+                    placeholder="e.g. 50000" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="TransactionDate" class="form-label"></label>
+                <input asp-for="TransactionDate" type="date" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Note" class="form-label"></label>
+                <textarea asp-for="Note" rows="3" class="form-control"></textarea>
+            </div>
+
+            <div class="text-center">
+                <input type="button" onclick="@onclickFunction" value="@buttonString" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>

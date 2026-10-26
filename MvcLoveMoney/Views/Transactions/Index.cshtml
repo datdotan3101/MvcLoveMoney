@@ -1,70 +1,414 @@
-@model IEnumerable<MvcLoveMoney.Models.Transaction>
-
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Transactions";
 }
 
-<h1>Index</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.TransactionType)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Amount)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.TransactionDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Note)
-            </th>
-            
-            <th>
-                @Html.DisplayNameFor(model => model.Category)
-            </th>
-             <th>
-                 @Html.DisplayName("Action")
-             </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(model => item.TransactionType)
-            </td>
-            <td>
-                @Html.DisplayFor(model => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(model => item.Amount)
-            </td>
-            <td>
-                @Html.DisplayFor(model => item.TransactionDate)
-            </td>
-            <td>
-                @Html.DisplayFor(model => item.Note)
-            </td>
-            
-            <td>
-                @Html.DisplayFor(model => item.Category.Name)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1>Transactions</h1>
+        <p class="text-muted">Track your daily income and expenses</p>
+    </div>
+    <button type="button" class="btn btn-success" onclick="openCreateTransaction()">
+        <i class="bi bi-plus-lg"></i> Transaction
+    </button>
+</div>
+
+<!-- Filter bar -->
+<div class="card mb-3">
+    <div class="card-body">
+
+        <!-- ===== Row 1: Search · Type · Category · Buttons ===== -->
+        <div class="row g-3 align-items-end">
+
+            <!-- Search by title -->
+            <div class="col-12 col-lg-4">
+                <label for="filterKeyword" class="form-label small mb-1">Search</label>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" id="filterKeyword" class="form-control"
+                           placeholder="Search by title..."
+                           onkeydown="if (event.key === 'Enter') applyFilter();" />
+                </div>
+            </div>
+
+            <!-- Transaction type -->
+            <div class="col-12 col-md-4 col-lg-2">
+                <label for="filterType" class="form-label small mb-1">Type</label>
+                <select id="filterType" class="form-select form-select-sm"
+                        asp-items="Html.GetEnumSelectList<TransactionType>()"
+                        onchange="loadFilterCategories(this.value)">
+                    <option value="">All types</option>
+                </select>
+            </div>
+
+            <!-- Category -->
+            <div class="col-12 col-md-4 col-lg-3">
+                <label for="filterCategory" class="form-label small mb-1">Category</label>
+                <select id="filterCategory" class="form-select form-select-sm">
+                    <option value="">All categories</option>
+                </select>
+            </div>
+
+            <!-- Buttons -->
+            <div class="col-12 col-md-4 col-lg-3 d-flex gap-2 justify-content-md-end">
+                <button type="button" class="btn btn-primary btn-sm" onclick="applyFilter()">
+                    <i class="bi bi-funnel"></i> Filter
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="resetFilter()">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reset
+                </button>
+            </div>
+        </div>
+
+        <!-- ===== Row 2: Date range (under Search) · Summary (under buttons) ===== -->
+        <div class="row g-3 align-items-end mt-0">
+
+            <!-- Date range -->
+            <div class="col-12 col-md-6 col-lg-4">
+                <label class="form-label small mb-1">
+                    <i class="bi bi-calendar3"></i> Date range
+                </label>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text"><i class="bi bi-calendar3"></i></span>
+                    <input type="date" id="fromDate" class="form-control" onchange="onDateChange()" />
+                    <span class="input-group-text">to</span>
+                    <input type="date" id="toDate" class="form-control" onchange="onDateChange()" />
+                </div>
+            </div>
+
+            <!-- Summary: totals for the selected date range -->
+            <div class="col-12 col-md-6 col-lg-8 text-md-end">
+                <span class="text-success fw-semibold">
+                    Income: <span id="totalIncome">+₫0</span>
+                </span>
+                <span class="text-danger fw-semibold ms-4">
+                    Expenses: <span id="totalExpense">-₫0</span>
+                </span>
+                <div class="text-muted small mt-1" id="summaryRange">All time</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Transaction list: rendered by the ViewComponent, then replaced via Ajax -->
+<div id="divTransactionList">
+    @await Component.InvokeAsync("TransactionList")
+</div>
+
+<!-- Shared modal for Create / Edit / Delete -->
+<div class="modal fade" id="transactionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="transactionModalTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="transactionModalBody"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // ---------- Current filters (applied when clicking Filter) ----------
+    let currentType = "";
+    let currentCategoryId = "";
+    let currentFromDate = "";
+    let currentToDate = "";
+    let currentKeyword = "";
+    const currencyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'VND' });
+    
+    // ---------- Tabs ----------
+    function filterTransactions(button, type) {
+        document.querySelectorAll('#transactionTabs .nav-link')
+                .forEach(function (b) { b.classList.remove('active'); });
+        button.classList.add('active');
+
+        currentType = type;
+        reloadTransactions();
+    }
+
+    // ---------- Modal ----------
+    function openModal(title, html) {
+        document.getElementById("transactionModalTitle").innerText = title;
+        document.getElementById("transactionModalBody").innerHTML = html;
+        bootstrap.Modal.getOrCreateInstance(document.getElementById("transactionModal")).show();
+    }
+
+    function closeModal() {
+        bootstrap.Modal.getOrCreateInstance(document.getElementById("transactionModal")).hide();
+    }
+
+    // ---------- Open Create / Edit form ----------
+    function openCreateTransaction() {
+        $.ajax({
+            url: '/Transactions/Create',
+            type: 'GET',
+            success: function (html) { openModal("Add transaction", html); },
+            error: function (xhr) { alert("Error " + xhr.status); }
+        });
+    }
+
+    function openEditTransaction(id) {
+        $.ajax({
+            url: '/Transactions/Edit/' + id,
+            type: 'GET',
+            success: function (html) { openModal("Edit transaction", html); },
+            error: function (xhr) { alert("Error " + xhr.status); }
+        });
+    }
+
+    // ---------- Save: buttons call createTransaction() / updateTransaction() ----------
+    function createTransaction() { sendTransaction('/Transactions/Create'); }
+    function updateTransaction() { sendTransaction('/Transactions/Edit'); }
+
+    function sendTransaction(url) {
+        // Step 1: Collect data
+        let formTransaction = document.getElementById("formTransaction");
+        let transactionVM = {
+            id:              formTransaction.querySelector("input[id='Id']")?.value ?? 0,
+            transactionType: formTransaction.querySelector("input[id='TransactionType']")?.value,
+            categoryId:      formTransaction.querySelector("select[id='CategoryId']")?.value,
+            name:            formTransaction.querySelector("input[id='Name']")?.value,
+            amount:          formTransaction.querySelector("input[id='Amount']")?.value,
+            transactionDate: formTransaction.querySelector("input[id='TransactionDate']")?.value,
+            note:            formTransaction.querySelector("textarea[id='Note']")?.value
+        };
+        let inputToken = formTransaction.querySelector("input[name='__RequestVerificationToken']");
+
+        // Step 2: Send request to server
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: { transactionVM: transactionVM, __RequestVerificationToken: inputToken?.value },
+            success: function (response) {
+                if (response.isOK === true) {
+                    closeModal();
+                    reloadTransactions();
+                } else {
+                    // Server returned the form with errors
+                    document.getElementById("transactionModalBody").innerHTML = response;
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Error:", status, error);
+                console.log("Details:", xhr.responseText);
+            },
+            timeout: 10000
+        });
+    }
+
+    // ---------- Delete ----------
+    function openDeleteTransaction(id) {
+        $.ajax({
+            url: '/Transactions/Delete/' + id,
+            type: 'GET',
+            success: function (html) { openModal("Delete transaction", html); },
+            error: function (xhr) { alert("Error " + xhr.status); }
+        });
+    }
+
+    function deleteTransaction(id) {
+        let token = document.querySelector("#transactionModalBody input[name='__RequestVerificationToken']")?.value;
+        $.ajax({
+            url: '/Transactions/Delete',
+            type: 'POST',
+            data: { id: id, __RequestVerificationToken: token },
+            success: function (res) {
+                if (res.isOK === true) {
+                    closeModal();
+                    reloadTransactions();
+                } else {
+                    document.getElementById("deleteError").innerText = res.message;
+                }
+            },
+            error: function (xhr) { alert("Error " + xhr.status); }
+        });
+    }
+
+    // ---------- Reload list via ViewComponent (keeps current filter) ----------
+    function reloadTransactions() {
+        loadSummary();    
+        $.ajax({
+            url: '/Transactions/Reload',
+            type: 'GET',
+            data: {
+                type: currentType,
+                categoryId: currentCategoryId,
+                fromDate: currentFromDate,
+                toDate: currentToDate,
+                keyword: currentKeyword
+            },
+            success: function (html) {
+                document.getElementById("divTransactionList").innerHTML = html;
+            },
+            error: function (xhr, status, error) {
+                console.error("Error:", status, error);
+            }
+        });
+    }
+    // ---------- Reload the Category dropdown when Type changes ----------
+    function loadCategoriesByType(type) {
+        $.ajax({
+            url: '/Transactions/GetCategories',
+            type: 'GET',
+            data: { type: type },
+            success: function (categories) {
+                let select = document.querySelector("#formTransaction select[id='CategoryId']");
+
+                // Remove old options, keep the placeholder
+                select.innerHTML = '<option value="">-- Select category --</option>';
+
+                if (categories.length === 0) {
+                    select.innerHTML += '<option value="" disabled>No categories for this type</option>';
+                    return;
+                }
+
+                // Add new options
+                categories.forEach(function (c) {
+                    let option = document.createElement('option');
+                    option.value = c.id;
+                    option.textContent = c.name;
+                    select.appendChild(option);
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error("Error:", status, error);
+            }
+        });
+    }
+    // ---------- Date range filter ----------
+    function filterByDate() {
+        currentFromDate = document.getElementById("fromDate").value;
+        currentToDate = document.getElementById("toDate").value;
+
+        // Prevent picking To before From (and From after To)
+        document.getElementById("toDate").min = currentFromDate;
+        document.getElementById("fromDate").max = currentToDate;
+
+        reloadTransactions();
+    }
+
+    function clearDateFilter() {
+        document.getElementById("fromDate").value = "";
+        document.getElementById("toDate").value = "";
+        filterByDate();
+    }
+
+    // ---------- Filter bar ----------
+
+    // Fill the Category filter dropdown (all categories, or only those of a type)
+    function loadFilterCategories(type) {
+        $.ajax({
+            url: '/Transactions/GetCategories',
+            type: 'GET',
+            data: { type: type },
+            success: function (categories) {
+                let select = document.getElementById("filterCategory");
+                let previous = select.value;                         // remember current choice
+
+                select.innerHTML = '<option value="">All categories</option>';
+                categories.forEach(function (c) {
+                    let option = document.createElement('option');
+                    option.value = c.id;
+                    option.textContent = c.name;
+                    select.appendChild(option);
+                });
+
+                // Keep the previous choice if it is still in the list
+                if (categories.some(function (c) { return String(c.id) === previous; })) {
+                    select.value = previous;
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Error:", status, error);
+            }
+        });
+    }
+
+    // Prevent picking To before From (and From after To)
+    function onDateChange() {
+        let fromInput = document.getElementById("fromDate");
+        let toInput = document.getElementById("toDate");
+        toInput.min = fromInput.value;
+        fromInput.max = toInput.value;
+    }
+
+    // Read all filter fields and reload the table
+    function applyFilter() {
+        currentType       = document.getElementById("filterType").value;
+        currentCategoryId = document.getElementById("filterCategory").value;
+        currentFromDate   = document.getElementById("fromDate").value;
+        currentToDate     = document.getElementById("toDate").value;
+        currentKeyword    = document.getElementById("filterKeyword").value.trim();
+        reloadTransactions();
+    }     
+
+    // Clear all filter fields and reload the table
+    function resetFilter() {
+        document.getElementById("filterType").value = "";
+        document.getElementById("filterCategory").value = "";
+        document.getElementById("fromDate").value = "";
+        document.getElementById("toDate").value = "";
+        document.getElementById("filterKeyword").value = "";
+        onDateChange();                 // clear min / max limits
+        loadFilterCategories("");       // show all categories again
+        applyFilter();
+    }
+
+    // When the page is ready: load all categories into the filter dropdown
+    $(function () {
+        loadFilterCategories("");
+        loadSummary();  
+    });
+
+    function loadSummary() {
+        $.ajax({
+            url: '/Transactions/GetSummary',
+            type: 'GET',
+            data: { fromDate: currentFromDate, toDate: currentToDate },
+            success: function (res) {
+                document.getElementById("totalIncome").innerText  = "+" + currencyFormat.format(res.income);
+                document.getElementById("totalExpense").innerText = "-" + currencyFormat.format(res.expense);
+                document.getElementById("summaryRange").innerText = getRangeText();
+            },
+            error: function (xhr, status, error) {
+                console.error("Error:", status, error);
+            }
+        });
+    }
+
+    // Text under the totals: "All time", "01/10/2026 – 26/10/2026", "From ...", "Until ..."
+    function getRangeText() {
+        if (!currentFromDate && !currentToDate) return "All time";
+        if (currentFromDate && currentToDate) return formatDate(currentFromDate) + " – " + formatDate(currentToDate);
+        if (currentFromDate) return "From " + formatDate(currentFromDate);
+        return "Until " + formatDate(currentToDate);
+    }
+
+    // "2026-10-26" → "26/10/2026"
+    function formatDate(value) {
+        let parts = value.split("-");
+        return parts[2] + "/" + parts[1] + "/" + parts[0];
+    }
+
+    // ---------- Type tabs inside the form ----------
+    function selectTransactionType(button, type) {
+        // Clicking the tab that is already selected → do nothing
+        if (button.classList.contains('active')) return;
+
+        // Highlight the clicked tab
+        document.querySelectorAll('#formTransaction .type-tabs .nav-link')
+                .forEach(function (b) { b.classList.remove('active'); });
+        button.classList.add('active');
+
+        // Write the value into the hidden input (sent to the server)
+        document.querySelector("#formTransaction input[id='TransactionType']").value = type;
+
+        // Reload the Category dropdown for this type
+        loadCategoriesByType(type);
+    }
+</script>
 }
-    </tbody>
-</table>

@@ -1,0 +1,55 @@
+﻿@model List<TransactionVM>
+
+@if (!Model.Any())
+{
+    <p class="text-muted">No transactions yet.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table text-nowrap table-bordered align-middle">
+            <thead>
+                <tr>
+                    <th scope="col">Type</th>
+                    <th scope="col">Name</th>
+                    <th scope="col" class="text-end">Amount</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Note</th>
+                    <th scope="col">Category</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    bool isIncome = item.TransactionType == TransactionType.Income;
+                    <tr>
+                        <th scope="row">@item.TransactionType</th>
+                        <td>@item.Name</td>
+                        <td class="text-end fw-bold @(isIncome ? "text-success" : "text-danger")">
+                            @(isIncome ? "+" : "-")@(item.Amount?.ToString("N0"))
+                        </td>
+                        <td>@item.TransactionDate.ToString("dd/MM/yyyy")</td>
+                        <td class="text-muted">@item.Note</td>
+                        <td>
+                            <i class="@item.CategoryIcon fs-5 align-middle" style="color:@item.CategoryThemeColor"></i>
+                            @item.CategoryName
+                        </td>
+                        <td>
+                            <div class="hstack gap-2 flex-wrap">
+                                <button type="button" class="btn btn-sm btn-outline-warning"
+                                        onclick="openEditTransaction(@item.Id)" title="Edit">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                        onclick="openDeleteTransaction(@item.Id)" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
