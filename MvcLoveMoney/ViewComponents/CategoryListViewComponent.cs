@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using MvcLoveMoney.Data;
 using MvcLoveMoney.Enums;
+using MvcLoveMoney.Helpers;
 using MvcLoveMoney.ViewModels;
 
 namespace MvcLoveMoney.ViewComponents
@@ -22,7 +23,9 @@ namespace MvcLoveMoney.ViewComponents
 
         public async Task<IViewComponentResult> InvokeAsync(TransactionType? type = null)
         {
-            var query = _context.Categories.AsQueryable();
+            // Only the logged-in user's categories
+            var userId = UserClaimsPrincipal.GetUserId();
+            var query = _context.Categories.Where(c => c.UserId == userId);
             if (type.HasValue)
             {
                 query = query.Where(c => c.CategoryType == type.Value);

@@ -50,9 +50,12 @@ namespace MvcLoveMoney.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(7)");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("Name", "CategoryType")
+                    b.HasIndex("UserId", "Name", "CategoryType")
                         .IsUnique();
 
                     b.ToTable("Categories", null, t =>
@@ -90,9 +93,14 @@ namespace MvcLoveMoney.Migrations
                     b.Property<int>("TransactionType")
                         .HasColumnType("int");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Transactions", null, t =>
                         {
@@ -142,6 +150,17 @@ namespace MvcLoveMoney.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("MvcLoveMoney.Models.Category", b =>
+                {
+                    b.HasOne("MvcLoveMoney.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("MvcLoveMoney.Models.Transaction", b =>
                 {
                     b.HasOne("MvcLoveMoney.Models.Category", "Category")
@@ -150,7 +169,15 @@ namespace MvcLoveMoney.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("MvcLoveMoney.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Category");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MvcLoveMoney.Models.Category", b =>

@@ -25,5 +25,9 @@ namespace MvcLoveMoney.Models
         [Display(Name = "Category")]
         public int CategoryId { get; set; }
         public virtual Category? Category { get; set; }
+
+        // Owner of this transaction
+        public int UserId { get; set; }
+        public virtual User? User { get; set; }
     }
 }

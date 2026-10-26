@@ -1,0 +1,75 @@
+@model MonthlyComparisonVM
+
+@* Monthly comparison table. Rendered inside Index, and re-rendered by Ajax when the ‹ › arrows are clicked. *@
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h2 class="h5 fw-bold mb-0">Monthly comparison</h2>
+
+    <div class="d-flex align-items-center gap-2">
+        @if (Model.EndMonth != Model.CurrentMonth)
+        {
+            <button type="button" class="btn btn-sm btn-link text-decoration-none"
+                    data-compare-end="@Model.CurrentMonth.ToString("yyyy-MM")">
+                This month
+            </button>
+        }
+
+        <button type="button" class="btn btn-sm btn-outline-secondary"
+                data-compare-end="@Model.EndMonth.AddMonths(-Model.MonthCount).ToString("yyyy-MM")"
+                aria-label="Previous @Model.MonthCount months" title="Previous @Model.MonthCount months"
+                disabled="@(!Model.HasPrevious)">
+            <i class="bi bi-chevron-left"></i>
+        </button>
+
+        <span class="small fw-semibold text-nowrap text-center" style="min-width: 130px;">
+            @Model.StartMonth.ToString("MM/yyyy") – @Model.EndMonth.ToString("MM/yyyy")
+        </span>
+
+        <button type="button" class="btn btn-sm btn-outline-secondary"
+                data-compare-end="@Model.EndMonth.AddMonths(Model.MonthCount).ToString("yyyy-MM")"
+                aria-label="Next @Model.MonthCount months" title="Next @Model.MonthCount months"
+                disabled="@(!Model.HasNext)">
+            <i class="bi bi-chevron-right"></i>
+        </button>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table align-middle text-nowrap mb-0">
+        <thead>
+            <tr>
+                <th scope="col">Month</th>
+                <th scope="col" class="text-end">Income</th>
+                <th scope="col" class="text-end">Expense</th>
+                <th scope="col" class="text-end">Balance</th>
+                <th scope="col" class="text-end">Balance vs previous month</th>
+            </tr>
+        </thead>
+        <tbody>
+            @* Newest month first *@
+            @foreach (var month in Enumerable.Reverse(Model.Months))
+            {
+                bool isCurrent = month.Month == Model.CurrentMonth;
+                var diff = month.BalanceChange ?? 0;
+                <tr class="@(isCurrent ? "table-light fw-semibold" : "")">
+                    <th scope="row">
+                        @month.Month.ToString("MM/yyyy")
+                        @if (isCurrent)
+                        {
+                            <span class="badge bg-primary-subtle text-primary ms-1">This month</span>
+                        }
+                    </th>
+                    <td class="text-end">@month.Income.ToString("N0")</td>
+                    <td class="text-end">@month.Expense.ToString("N0")</td>
+                    <td class="text-end fw-bold @(month.Balance < 0 ? "text-danger" : "")">@month.Balance.ToString("N0")</td>
+                    <td class="text-end small">
+                        <span class="@(diff > 0 ? "text-success" : diff < 0 ? "text-danger" : "text-secondary")">
+                            <i class="bi @(diff >= 0 ? "bi-arrow-up-right" : "bi-arrow-down-right")"></i>
+                            @(diff > 0 ? "+" : "")@diff.ToString("N0")
+                        </span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

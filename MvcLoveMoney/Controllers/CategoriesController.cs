@@ -1,14 +1,20 @@
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MvcLoveMoney.Data;
 using MvcLoveMoney.Enums;
+using MvcLoveMoney.Helpers;
 using MvcLoveMoney.Models;
 using MvcLoveMoney.ViewModels;
 
+[Authorize]
 public class CategoriesController : Controller
 {
     private readonly MvcLoveMoneyDbContext _context;
+
+    // Id of the logged-in user: every query below is limited to their own data
+    private int UserId => User.GetUserId();
 
     public CategoriesController(MvcLoveMoneyDbContext context)
     {
@@ -42,7 +48,7 @@ public class CategoriesController : Controller
         }
 
         var category = await _context.Categories
-            .FirstOrDefaultAsync(m => m.Id == id);
+            .FirstOrDefaultAsync(m => m.Id == id && m.UserId == UserId);
         if (category == null)
         {
             return NotFound();
@@ -56,6 +62,7 @@ public class CategoriesController : Controller
     private async Task CheckDuplicateAsync(CategoryVM categoryVM)
     {
         bool isDuplicate = await _context.Categories.AnyAsync(c =>
+            c.UserId == UserId &&
             c.Name == categoryVM.Name &&
             c.CategoryType == categoryVM.CategoryType &&
             c.Id != categoryVM.Id);               // bỏ qua chính nó (khi Edit)
@@ -95,7 +102,8 @@ public class CategoriesController : Controller
                     CategoryType = categoryVM.CategoryType,
                     Name = categoryVM.Name,
                     Icon = categoryVM.Icon,
-                    ThemeColor = categoryVM.ThemeColor
+                    ThemeColor = categoryVM.ThemeColor,
+                    UserId = UserId
                 };
                 await _context.Categories.AddAsync(newCategory);
                 await _context.SaveChangesAsync();
@@ -121,7 +129,7 @@ public class CategoriesController : Controller
         }
 
         var categoryVM = await _context.Categories
-               .Where(c => c.Id == id)
+               .Where(c => c.Id == id && c.UserId == UserId)
                .Select(c => new CategoryVM
                {
                    Id = c.Id,
@@ -154,7 +162,8 @@ public class CategoriesController : Controller
 
         if (ModelState.IsValid)
         {
-            var category = await _context.Categories.FindAsync(categoryVM.Id);
+            var category = await _context.Categories
+                .FirstOrDefaultAsync(c => c.Id == categoryVM.Id && c.UserId == UserId);
             if (category == null) return NotFound();
 
             // Copy values from ViewModel to entity
@@ -189,7 +198,7 @@ public class CategoriesController : Controller
         //    .FirstOrDefaultAsync(m => m.Id == id);
 
         var categoryVM = await _context.Categories
-               .Where(c => c.Id == id)
+               .Where(c => c.Id == id && c.UserId == UserId)
                .Select(c => new CategoryVM
                {
                    Id = c.Id,
@@ -211,7 +220,8 @@ public class CategoriesController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int? id)
     {
-        var category = await _context.Categories.FindAsync(id);
+        var category = await _context.Categories
+            .FirstOrDefaultAsync(c => c.Id == id && c.UserId == UserId);
         if (category == null)
             return Json(new { isOK = false, message = "Category not found." });
 

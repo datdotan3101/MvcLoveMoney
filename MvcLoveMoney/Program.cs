@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MvcLoveMoney.Data;
 using MvcLoveMoney.Models;
+using MvcLoveMoney.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,12 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     });
 
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+
+// Sends emails (forgot-password OTP). SMTP settings: "Smtp" section / user secrets
+builder.Services.AddScoped<IEmailService, SmtpEmailService>();
+
+// Forgot-password OTPs are kept in memory (lost when the app restarts)
+builder.Services.AddMemoryCache();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

@@ -23,6 +23,7 @@
     <div class="mb-3">
         <label asp-for="Password" class="form-label"></label>
         <input asp-for="Password" class="form-control" />
+        <div class="form-text">@MvcLoveMoney.Helpers.StrongPasswordAttribute.Hint</div>
         <span asp-validation-for="Password" class="text-danger small"></span>
     </div>
 

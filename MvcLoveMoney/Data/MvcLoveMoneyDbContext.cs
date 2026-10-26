@@ -41,8 +41,14 @@ namespace MvcLoveMoney.Data
                       .HasMaxLength(MaxLengths.ThemeColor)
                       .IsUnicode(false);
 
-                // Không trùng tên trong cùng 1 loại
-                entity.HasIndex(e => new { e.Name, e.CategoryType }).IsUnique();
+                // Không trùng tên trong cùng 1 loại (của cùng 1 người dùng)
+                entity.HasIndex(e => new { e.UserId, e.Name, e.CategoryType }).IsUnique();
+
+                // Mỗi danh mục thuộc về 1 người dùng; xoá user → xoá danh mục của họ
+                entity.HasOne(e => e.User)
+                      .WithMany()
+                      .HasForeignKey(e => e.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
 
             // ===== Transaction =====
@@ -67,6 +73,12 @@ namespace MvcLoveMoney.Data
                       .WithMany(c => c.Transactions)
                       .HasForeignKey(e => e.CategoryId)
                       .OnDelete(DeleteBehavior.Restrict);
+
+                // Mỗi giao dịch thuộc về 1 người dùng; xoá user → xoá giao dịch của họ
+                entity.HasOne(e => e.User)
+                      .WithMany()
+                      .HasForeignKey(e => e.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
 
             // Authentication( Login/ Register)

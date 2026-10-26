@@ -6,6 +6,13 @@
 <h1 class="h4 fw-bold mb-1">Welcome back</h1>
 <p class="text-secondary mb-4">Log in to manage your money.</p>
 
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success small">
+        <i class="bi bi-check-circle me-1"></i> @TempData["SuccessMessage"]
+    </div>
+}
+
 <form asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger small"></div>
 
@@ -16,7 +23,10 @@
     </div>
 
     <div class="mb-4">
-        <label asp-for="Password" class="form-label"></label>
+        <div class="d-flex justify-content-between align-items-baseline">
+            <label asp-for="Password" class="form-label"></label>
+            <a asp-action="ForgotPassword" class="small">Forgot password?</a>
+        </div>
         <input asp-for="Password" class="form-control" />
         <span asp-validation-for="Password" class="text-danger small"></span>
     </div>

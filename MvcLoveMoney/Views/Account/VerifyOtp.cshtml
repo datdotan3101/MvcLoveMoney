@@ -1,0 +1,72 @@
+@model MvcLoveMoney.ViewModels.VerifyOtpVM
+@using MvcLoveMoney.Configs
+@{
+    ViewData["Title"] = "Enter code";
+}
+
+<h1 class="h4 fw-bold mb-1">Check your email</h1>
+<p class="text-secondary mb-4">
+    Enter the @OtpSettings.CodeLength-digit code sent to <strong class="text-body">@Model.Email</strong>.
+    It expires in @OtpSettings.ExpiryMinutes minutes.
+</p>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success small">
+        <i class="bi bi-envelope-check me-1"></i> @TempData["SuccessMessage"]
+    </div>
+}
+
+<form asp-action="VerifyOtp" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger small"></div>
+    <input type="hidden" asp-for="Email" />
+
+    <div class="mb-4">
+        <label asp-for="Code" class="form-label"></label>
+        <input asp-for="Code" class="form-control form-control-lg text-center fw-bold"
+               style="letter-spacing: 0.5em;" maxlength="@OtpSettings.CodeLength"
+               inputmode="numeric" autocomplete="one-time-code" placeholder="••••••" autofocus />
+        <span asp-validation-for="Code" class="text-danger small"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Verify code</button>
+</form>
+
+<!-- Resend: posts the email to ForgotPassword again -->
+<form asp-action="ForgotPassword" method="post" class="text-center mt-4 small">
+    <input type="hidden" name="Email" value="@Model.Email" />
+    <span class="text-secondary">Didn't get it?</span>
+    <button type="submit" id="resendButton" class="btn btn-link btn-sm p-0 align-baseline"
+            data-wait="@Model.ResendWaitSeconds">
+        Resend code
+    </button>
+</form>
+
+<p class="text-center mt-2 mb-0 small">
+    <a asp-action="ForgotPassword">Use a different email</a>
+</p>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Disable "Resend code" until the cooldown is over
+        (function () {
+            const button = document.getElementById('resendButton');
+            let wait = parseInt(button.dataset.wait, 10) || 0;
+            const label = 'Resend code';
+
+            function tick() {
+                if (wait > 0) {
+                    button.disabled = true;
+                    button.textContent = `${label} (${wait}s)`;
+                    wait--;
+                    setTimeout(tick, 1000);
+                } else {
+                    button.disabled = false;
+                    button.textContent = label;
+                }
+            }
+            tick();
+        })();
+    </script>
+}
