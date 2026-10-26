@@ -28,6 +28,12 @@
     Don't have an account? <a asp-action="Register">Sign up</a>
 </p>
 
+<partial name="_GoogleLoginButton" />
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger small">@TempData["ErrorMessage"]</div>
+}
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }

@@ -5,7 +5,6 @@
 
 <h1 class="h4 fw-bold mb-1">Create an account</h1>
 <p class="text-secondary mb-4">Start tracking your income and expenses.</p>
-
 <form asp-action="Register" method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger small"></div>
 
@@ -39,6 +38,9 @@
 <p class="text-center mt-4 mb-0 small">
     Already have an account? <a asp-action="Login">Log in</a>
 </p>
+
+<partial name="_GoogleLoginButton" />
+
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

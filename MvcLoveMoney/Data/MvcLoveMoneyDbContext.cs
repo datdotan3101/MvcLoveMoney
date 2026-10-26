@@ -76,6 +76,8 @@ namespace MvcLoveMoney.Data
                 entity.Property(u => u.FullName).HasMaxLength(MaxLengths.NameLength).IsRequired();
                 entity.Property(u => u.Email).HasMaxLength(MaxLengths.EmailLength).IsRequired();
                 entity.HasIndex(u => u.Email).IsUnique();
+                entity.Property(u => u.GoogleId).HasMaxLength(100);
+                entity.HasIndex(u => u.GoogleId).IsUnique();
             });
         }
     }
