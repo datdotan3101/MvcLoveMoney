@@ -4,22 +4,7 @@
     ViewData["Subtitle"] = "Manage your profile and password";
 }
 
-@if (TempData["SuccessMessage"] != null)
-{
-    <!-- Success toast: bottom-right corner, hides itself after 5 seconds -->
-    <div class="toast-container position-fixed bottom-0 end-0 p-3">
-        <div id="successToast" class="toast align-items-center text-bg-success border-0"
-             role="status" aria-live="polite" aria-atomic="true" data-bs-delay="5000">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i class="bi bi-check-circle me-1"></i> @TempData["SuccessMessage"]
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto"
-                        data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        </div>
-    </div>
-}
+<partial name="_SuccessToast" />
 
 <div class="row g-4">
 
@@ -92,6 +77,8 @@
                             <span asp-validation-for="ChangePassword.ConfirmPassword" class="text-danger small"></span>
                         </div>
 
+                        <partial name="_ShowPasswordToggle" />
+
                         <button type="submit" class="btn btn-primary">Change password</button>
                     </form>
                 }
@@ -117,6 +104,8 @@
                             <span asp-validation-for="SetPassword.ConfirmPassword" class="text-danger small"></span>
                         </div>
 
+                        <partial name="_ShowPasswordToggle" />
+
                         <button type="submit" class="btn btn-primary">Set password</button>
                     </form>
                 }
@@ -127,12 +116,4 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-
-    <script>
-        // Show the success toast (if any) when the page loads
-        const successToast = document.getElementById('successToast');
-        if (successToast) {
-            bootstrap.Toast.getOrCreateInstance(successToast).show();
-        }
-    </script>
 }
