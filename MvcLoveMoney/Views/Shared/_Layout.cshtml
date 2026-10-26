@@ -1,11 +1,11 @@
 ﻿@using System.Globalization                                  @* NEW *@
 @using MvcLoveMoney.Configs                                  @* NEW *@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="scrollbar-gutter: stable;">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-   
+    <title>@ViewData["Title"] - MvcLoveMoney</title>
 
     <!-- 1. Bootstrap (use the template's version if it has one) -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
@@ -21,6 +21,7 @@
     <!-- 4. Our own CSS (always last) -->
     <link rel="stylesheet" href="~/MvcLoveMoney.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
 </head>
 <body>
     @{
@@ -37,129 +38,120 @@
 
     <div class="d-flex">
 
-        <!-- Sidebar: offcanvas on small screens, fixed column on large screens -->
-        <aside class="offcanvas-lg offcanvas-start sidebar bg-white" tabindex="-1" id="sidebar">
+        <!-- Sidebar: offcanvas on small screens, sticky column on large screens -->
+    <aside class="offcanvas-lg offcanvas-start bg-white border-end sticky-lg-top vh-100 flex-shrink-0 overflow-y-auto z-1"
+           style="--bs-offcanvas-width: 260px; width: 260px;" tabindex="-1" id="sidebar">
 
-            <!-- Header inside the slide-in panel (small screens only) -->
-            <div class="offcanvas-header border-bottom">
-                <span class="sidebar-brand">
-                    <i class="bi bi-wallet2 text-primary"></i> MvcLoveMoney
-                </span>
-                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebar"></button>
+        <!-- Header inside the slide-in panel (small screens only) -->
+        <div class="offcanvas-header border-bottom">
+            <span class="fs-5 fw-semibold">
+                <i class="bi bi-wallet2 text-primary"></i> MvcLoveMoney
+            </span>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebar"></button>
+        </div>
+
+        <div class="offcanvas-body d-flex flex-column p-3 w-100">
+
+            <!-- Brand (large screens only) -->
+            <a class="d-none d-lg-flex align-items-center gap-2 px-2 py-2 mb-3 fs-5 fw-semibold text-dark text-decoration-none"
+               asp-controller="Home" asp-action="Index">
+                <i class="bi bi-wallet2 text-primary fs-4"></i> MvcLoveMoney
+            </a>
+
+            <div class="text-uppercase small fw-semibold text-secondary px-2 mb-2">Menu</div>
+
+            <ul class="nav nav-pills flex-column gap-1">
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2 @(currentController == "Home" ? "active" : "text-body")"
+                       asp-controller="Home" asp-action="Index">
+                        <i class="bi bi-grid-1x2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2 @(currentController == "Transactions" ? "active" : "text-body")"
+                       asp-controller="Transactions" asp-action="Index">
+                        <i class="bi bi-arrow-left-right"></i> Transactions
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2 @(currentController == "Categories" ? "active" : "text-body")"
+                       asp-controller="Categories" asp-action="Index">
+                        <i class="bi bi-tags"></i> Categories
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2 @(currentController == "Settings" ? "active" : "text-body")"
+                       asp-controller="Settings" asp-action="Index">
+                        <i class="bi bi-gear"></i> Settings
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Bottom of the sidebar -->
+            <div class="mt-auto px-2 pt-3 small text-muted">
+                &copy; @DateTime.Now.Year MvcLoveMoney
             </div>
-
-            <div class="offcanvas-body d-flex flex-column p-3 w-100">
-
-                <!-- Brand (large screens only) -->
-                <a class="sidebar-brand d-none d-lg-flex align-items-center gap-2 px-2 py-2 mb-3"
-                   asp-controller="Home" asp-action="Index">
-                    <i class="bi bi-wallet2 text-primary fs-4"></i> MvcLoveMoney
-                </a>
-
-                <div class="sidebar-label px-2 mb-2">Menu</div>
-
-                <ul class="nav flex-column gap-1">
-                    <li class="nav-item">
-                        <a class="nav-link @(currentController == "Home" ? "active" : "")"
-                           asp-controller="Home" asp-action="Index">
-                            <i class="bi bi-grid-1x2"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link @(currentController == "Transactions" ? "active" : "")"
-                           asp-controller="Transactions" asp-action="Index">
-                            <i class="bi bi-arrow-left-right"></i> Transactions
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link @(currentController == "Categories" ? "active" : "")"
-                           asp-controller="Categories" asp-action="Index">
-                            <i class="bi bi-tags"></i> Categories
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link @(currentController == "Settings" ? "active" : "")"
-                           asp-controller="Settings" asp-action="Index">
-                            <i class="bi bi-gear"></i> Settings
-                        </a>
-                    </li>
-                </ul>
-
-                <!-- Bottom of the sidebar -->
-                <div class="mt-auto px-2 pt-3 small text-muted">
-                    &copy; @DateTime.Now.Year MvcLoveMoney
-                </div>
-            </div>
-        </aside>
+        </div>
+    </aside>
 
         <!-- NEW: right column = header + page content -->
         <div class="flex-grow-1 d-flex flex-column min-vh-100" style="min-width: 0;">
 
             <!-- ===================== NEW: HEADER ===================== -->
-            <header class="sticky-top bg-white border-bottom d-flex align-items-center gap-4 px-4 py-3"
-                style="min-height: 76px;">
+            <!-- ===================== HEADER ===================== -->
+    <header class="app-topbar sticky-top d-flex align-items-center gap-3 px-4 py-3 z-0 mt-1 bg-white">
 
-                <!-- Sidebar button (small screens only) -->
-                <button class="btn btn-outline-secondary btn-sm d-lg-none" type="button"
-                        data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar">
-                    <i class="bi bi-list fs-5"></i>
-                </button>
+        <!-- Sidebar button (small screens only) -->
+        <button class="btn btn-light border btn-sm d-lg-none" type="button"
+                data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar">
+            <i class="bi bi-list fs-5"></i>
+        </button>
 
-                <!-- Page title + subtitle -->
-                <div>
-                    <h1 class="h5 fw-bold mb-0">@ViewData["Title"]</h1>
-                    @if (ViewData["Subtitle"] != null)
-                    {
-                        <p class="small text-secondary mb-0 d-none d-sm-block">@ViewData["Subtitle"]</p>
-                    }
-                </div>
+        <!-- Page title + subtitle -->
+        <div class="me-auto">
+            <h1 class="h3 fw-bold mb-0">@ViewData["Title"]</h1>
+            @if (ViewData["Subtitle"] != null)
+            {
+                <p class="text-secondary mb-0 d-none d-sm-block">@ViewData["Subtitle"]</p>
+            }
+        </div>
 
-                <!-- Right side -->
-                <div class="mt-4 ms-auto d-flex align-items-center align-self-stretch gap-3 gap-lg-4 pe-2 pe-lg-3">
+        <!-- Today -->
+        <div class="d-none d-md-flex align-items-center gap-2 px-3 py-2 rounded-pill bg-white shadow-sm text-secondary small">
+            <i class="bi bi-calendar3"></i>
+            @DateTime.Today.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)
+        </div>
 
-                    <!-- Today -->
-                    <div class="d-none d-md-flex align-items-center gap-2 px-3 py-2 border rounded-3 bg-light text-secondary small">
-                        <i class="bi bi-calendar3"></i>
-                        @DateTime.Today.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)
-                    </div>
-
-                    <!-- Page-specific action button (e.g. Add Transaction) -->
-                    @if (IsSectionDefined("HeaderActions"))
-                    {
-                        @await RenderSectionAsync("HeaderActions", required: false)
-                    }
-
-                    <!-- Profile -->
-                    <div class="dropdown">
-                        <button type="button" class="btn d-flex align-items-center gap-2 p-0 border-0 dropdown-toggle"
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                            <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-success-subtle text-success fw-bold small"
-                                  style="width: 36px; height: 36px;">
-                                @initials
-                            </span>
-                            <span class="d-none d-sm-block text-start lh-sm">
-                                <span class="d-block fw-semibold text-dark">@AppConfigs.UserName</span>
-                                <span class="d-block small text-secondary">@AppConfigs.Currency</span>
-                            </span>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                            <li>
-                                <a class="dropdown-item d-flex align-items-center gap-2"
-                                   asp-controller="Settings" asp-action="Index">
-                                    <i class="bi bi-gear"></i> Settings
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider" /></li>
-                            <li>
-                                <!-- TODO: connect to Logout when login is added -->
-                                <a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="javascript:void(0);">
-                                    <i class="bi bi-box-arrow-right"></i> Log Out
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </header>
+        <!-- Profile -->
+        <div class="dropdown">
+            <button type="button"
+                    class="btn d-flex align-items-center gap-2 p-1 pe-3 rounded-pill bg-white shadow-sm border-0 dropdown-toggle"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="topbar-avatar d-inline-flex align-items-center justify-content-center rounded-circle bg-success-subtle text-success fw-bold small">
+                    @initials
+                </span>
+                <span class="d-none d-sm-block text-start lh-sm">
+                    <span class="d-block fw-semibold text-dark">@AppConfigs.UserName</span>
+                    <span class="d-block small text-secondary">@AppConfigs.Currency</span>
+                </span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
+                <li>
+                    <a class="dropdown-item d-flex align-items-center gap-2"
+                       asp-controller="Settings" asp-action="Index">
+                        <i class="bi bi-gear"></i> Settings
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                    <!-- TODO: connect to Logout when login is added -->
+                    <a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="javascript:void(0);">
+                        <i class="bi bi-box-arrow-right"></i> Log Out
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </header>
 
             <!-- Page content (unchanged, only moved inside the right column) -->
             <main class="main-content flex-grow-1 p-4">
@@ -168,6 +160,7 @@
         </div>
     </div>
 
+     @await RenderSectionAsync("Modals", required: false)
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

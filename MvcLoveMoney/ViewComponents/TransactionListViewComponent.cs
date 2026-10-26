@@ -58,7 +58,7 @@ namespace MvcLoveMoney.ViewComponents
                 TransactionDate = t.TransactionDate,
                 Note = t.Note,
                 CategoryId = t.CategoryId,
-                CategoryName = t.Category!.Name,          // EF Core joins Categories automatically
+                CategoryName = t.Category!.Name,          
                 CategoryIcon = t.Category.Icon,
                 CategoryThemeColor = t.Category.ThemeColor
             }).ToListAsync();

@@ -21,11 +21,11 @@ else
                 {
                     <tr>
                         <th scope="row">
-                            <div class="d-flex align-items-center">
+                            <div class="d-flex align-items-center @(item.CategoryType == TransactionType.Expense ? "text-danger" : "text-success")">
                                @item.CategoryType
                             </div>
                         </th>
-                        <td><span class="bg-success-transparent">@item.Name</span></td>
+                        <td class="text-dark bg-white">@item.Name</td>
                         <td>
                             <i class="@item.Icon fs-4" style="color:@item.ThemeColor"></i>
                         </td>

@@ -10,13 +10,13 @@ else
         <table class="table text-nowrap table-bordered align-middle">
             <thead>
                 <tr>
-                    <th scope="col">Type</th>
-                    <th scope="col">Name</th>
-                    <th scope="col" class="text-end">Amount</th>
-                    <th scope="col">Date</th>
+                    <th scope="col" style="width: 15%">Transaction</th>
+                    <th scope="col" style="width: 13%;">Category</th>
+                    <th scope="col" style="width: 9%;">Type</th>
+                    <th scope="col" style="width: 10%;">Date</th>
+                    <th scope="col" style="width: 10%;" class="text-end">Amount</th>
                     <th scope="col">Note</th>
-                    <th scope="col">Category</th>
-                    <th scope="col">Action</th>
+                    <th scope="col" style="width: 100px;">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -24,17 +24,17 @@ else
                 {
                     bool isIncome = item.TransactionType == TransactionType.Income;
                     <tr>
-                        <th scope="row">@item.TransactionType</th>
                         <td>@item.Name</td>
-                        <td class="text-end fw-bold @(isIncome ? "text-success" : "text-danger")">
-                            @(isIncome ? "+" : "-")@(item.Amount?.ToString("N0"))
-                        </td>
-                        <td>@item.TransactionDate.ToString("dd/MM/yyyy")</td>
-                        <td class="text-muted">@item.Note</td>
-                        <td>
+                         <td>
                             <i class="@item.CategoryIcon fs-5 align-middle" style="color:@item.CategoryThemeColor"></i>
                             @item.CategoryName
                         </td>
+                        <th scope="row">@item.TransactionType</th>
+                        <td>@item.TransactionDate.ToString("dd/MM/yyyy")</td>
+                        <td class="text-end fw-bold @(isIncome ? "text-success" : "text-danger")">
+                            @(isIncome ? "+" : "-")@(item.Amount?.ToString("N0"))
+                        </td>
+                        <td class="text-muted">@item.Note</td>
                         <td>
                             <div class="hstack gap-2 flex-wrap">
                                 <button type="button" class="btn btn-sm btn-outline-warning"

@@ -1,0 +1,96 @@
+﻿/* =========================================================
+   MvcLoveMoney – layout styles
+   (things Bootstrap utilities cannot do: sidebar collapse)
+   ========================================================= */
+
+:root {
+    --lm-header-h: 70px;
+    --lm-sidebar-w: 300px;
+}
+
+/* ---------- Header ---------- */
+.lm-header {
+    height: var(--lm-header-h);
+    background-color: #f8fafc;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+.lm-toggle {
+    color: #3b5bdb;
+    font-size: 1.75rem;
+    line-height: 1;
+}
+
+.lm-icon-close {
+    display: none;
+}
+
+.lm-round-btn,
+.lm-avatar {
+    width: 46px;
+    height: 46px;
+}
+
+/* ---------- Sidebar ---------- */
+.lm-sidebar {
+    --bs-offcanvas-width: 300px; /* slide-in width on small screens */
+    width: var(--lm-sidebar-w);
+    transition: width 0.2s;
+}
+
+    .lm-sidebar .nav-link {
+        color: #212529;
+    }
+
+        .lm-sidebar .nav-link i {
+            color: #6c757d;
+            font-size: 1.4rem;
+        }
+
+        .lm-sidebar .nav-link:hover {
+            background-color: #f1f3f5;
+        }
+
+        .lm-sidebar .nav-link.active {
+            font-weight: 700;
+        }
+
+.lm-divider {
+    display: none;
+}
+
+/* ---------- Large screens ---------- */
+@media (min-width: 992px) {
+    .lm-brand {
+        width: var(--lm-sidebar-w);
+        transition: width 0.2s;
+    }
+
+    .lm-sidebar {
+        position: sticky;
+        top: var(--lm-header-h);
+        height: calc(100vh - var(--lm-header-h));
+    }
+
+    /* Collapsed: icons only */
+    body.sidebar-collapsed {
+        --lm-sidebar-w: 88px;
+    }
+
+        body.sidebar-collapsed .lm-logo,
+        body.sidebar-collapsed .lm-label,
+        body.sidebar-collapsed .lm-text,
+        body.sidebar-collapsed .lm-icon-open {
+            display: none !important;
+        }
+
+        body.sidebar-collapsed .lm-divider,
+        body.sidebar-collapsed .lm-icon-close {
+            display: block;
+        }
+
+        body.sidebar-collapsed .lm-brand,
+        body.sidebar-collapsed .lm-sidebar .nav-link {
+            justify-content: center !important;
+        }
+}

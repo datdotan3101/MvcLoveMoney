@@ -71,9 +71,9 @@
                 </label>
                 <div class="input-group input-group-sm">
                     <span class="input-group-text"><i class="bi bi-calendar3"></i></span>
-                    <input type="date" id="fromDate" class="form-control" onchange="onDateChange()" />
+                    <input type="text" id="fromDate" class="form-control" placeholder="dd/mm/yyyy" onchange="onDateChange()" />
                     <span class="input-group-text">to</span>
-                    <input type="date" id="toDate" class="form-control" onchange="onDateChange()" />
+                    <input type="text" id="toDate" class="form-control" placeholder="dd/mm/yyyy" onchange="onDateChange()" />
                 </div>
             </div>
 
@@ -98,20 +98,48 @@
 </div>
 
 <!-- Shared modal for Create / Edit / Delete -->
-<div class="modal fade" id="transactionModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="transactionModalTitle"></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+@section Modals {
+    <!-- Shared modal for Create / Edit / Delete -->
+    <div class="modal fade" id="transactionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="transactionModalTitle"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="transactionModalBody"></div>
             </div>
-            <div class="modal-body" id="transactionModalBody"></div>
         </div>
     </div>
-</div>
+}
 
 @section Scripts {
+<!-- Date picker: shows dd/mm/yyyy -->
+<link rel="stylesheet" href="~/assets/libs/flatpickr/flatpickr.min.css" />
+<style>
+    .flatpickr-wrapper { width: 100%; }   /* static picker inside the modal: keep full width */
+</style>
+<script src="~/assets/libs/flatpickr/flatpickr.min.js"></script>
 <script>
+    // ---------- Date pickers ----------
+    // Shows dd/mm/yyyy to the user, but the real input keeps yyyy-MM-dd (sent to the server)
+    function initDatePicker(element, options) {
+        return flatpickr(element, Object.assign({
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "d/m/Y"
+        }, options));
+    }
+
+    // Date picker in the Create / Edit form (form is loaded via Ajax)
+    function initFormDatePicker() {
+        let input = document.querySelector("#formTransaction input[id='TransactionDate']");
+        if (input) initDatePicker(input, { static: true });   // static: stays inside the modal
+    }
+
+    let fromPicker = initDatePicker("#fromDate");
+    let toPicker   = initDatePicker("#toDate");
+
     // ---------- Current filters (applied when clicking Filter) ----------
     let currentType = "";
     let currentCategoryId = "";
@@ -132,8 +160,15 @@
 
     // ---------- Modal ----------
     function openModal(title, html) {
+        let modalElement = document.getElementById("transactionModal");
+
+        // Move the modal directly under <body> so no parent element can cover it
+        if (modalElement.parentElement !== document.body) {
+            document.body.appendChild(modalElement);
+        }
         document.getElementById("transactionModalTitle").innerText = title;
         document.getElementById("transactionModalBody").innerHTML = html;
+        initFormDatePicker();
         bootstrap.Modal.getOrCreateInstance(document.getElementById("transactionModal")).show();
     }
 
@@ -190,6 +225,7 @@
                 } else {
                     // Server returned the form with errors
                     document.getElementById("transactionModalBody").innerHTML = response;
+                    initFormDatePicker();
                 }
             },
             error: function (xhr, status, error) {
@@ -279,24 +315,6 @@
             }
         });
     }
-    // ---------- Date range filter ----------
-    function filterByDate() {
-        currentFromDate = document.getElementById("fromDate").value;
-        currentToDate = document.getElementById("toDate").value;
-
-        // Prevent picking To before From (and From after To)
-        document.getElementById("toDate").min = currentFromDate;
-        document.getElementById("fromDate").max = currentToDate;
-
-        reloadTransactions();
-    }
-
-    function clearDateFilter() {
-        document.getElementById("fromDate").value = "";
-        document.getElementById("toDate").value = "";
-        filterByDate();
-    }
-
     // ---------- Filter bar ----------
 
     // Fill the Category filter dropdown (all categories, or only those of a type)
@@ -330,10 +348,8 @@
 
     // Prevent picking To before From (and From after To)
     function onDateChange() {
-        let fromInput = document.getElementById("fromDate");
-        let toInput = document.getElementById("toDate");
-        toInput.min = fromInput.value;
-        fromInput.max = toInput.value;
+        toPicker.set("minDate", document.getElementById("fromDate").value || null);
+        fromPicker.set("maxDate", document.getElementById("toDate").value || null);
     }
 
     // Read all filter fields and reload the table
@@ -350,8 +366,8 @@
     function resetFilter() {
         document.getElementById("filterType").value = "";
         document.getElementById("filterCategory").value = "";
-        document.getElementById("fromDate").value = "";
-        document.getElementById("toDate").value = "";
+        fromPicker.clear();
+        toPicker.clear();
         document.getElementById("filterKeyword").value = "";
         onDateChange();                 // clear min / max limits
         loadFilterCategories("");       // show all categories again

@@ -15,6 +15,31 @@ string[] icons =
     };
 }
 
+<!-- Làm nổi bật icon đang được chọn -->
+<style>
+    .icons-list .icons-list-item {
+        cursor: pointer;
+        border-radius: 0.5rem;
+        transition: all 0.15s;
+    }
+
+    .icons-list .icons-list-item:hover {
+        border-color: var(--bs-primary);
+    }
+
+    .icons-list .icons-list-item.active {
+        background-color: var(--bs-primary);
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.3);
+        transform: scale(1.1);
+    }
+
+    .icons-list .icons-list-item.active i {
+        color: #fff;
+        font-size: 1.4rem;
+    }
+</style>
+
 <div class="row">
 
     <form id="formCategory" asp-action="@actionName" method="post" onsubmit="saveCategory(); return false;">
@@ -61,10 +86,6 @@ string[] icons =
                  <input  asp-for="ThemeColor" type="color" class="form-control w-25" id="form-text" placeholder="">
                  <span asp-validation-for="ThemeColor" class="text-danger"></span>
              </div>
-            <!-- Xem trước icon đang chọn -->
-            <div class="mb-2">
-                Preview: <i id="iconPreview" class="@Model.Icon fs-3 align-middle"></i>
-            </div>
         </div>
         <button class="btn btn-primary" type="submit">@buttonName</button>
     </form>

@@ -58,7 +58,6 @@
             let icon = $(this).data('icon');                               // e.g. "bx bx-gift"
 
             $('#Icon').val(icon);                                          // write to hidden input → sent to server
-            $('#iconPreview').attr('class', icon + ' fs-3 align-middle');  // update preview
 
             $('.icons-list-item').removeClass('active');                   // un-highlight others
             $(this).addClass('active');                                    // highlight selected

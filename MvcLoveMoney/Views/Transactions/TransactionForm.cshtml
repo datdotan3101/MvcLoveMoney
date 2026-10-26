@@ -6,7 +6,7 @@
     string onclickFunction = isCreate ? "createTransaction();" : "updateTransaction();";
 }
 
-<div class="row">
+<div class="row z-2">
     <div class="col-md-12">
         <form id="formTransaction" asp-action="@actionString" method="post" onsubmit="return false;">
             @if (!isCreate)
@@ -64,7 +64,9 @@
 
             <div class="mb-3">
                 <label asp-for="TransactionDate" class="form-label"></label>
-                <input asp-for="TransactionDate" type="date" class="form-control" />
+                <!-- Shown as dd/mm/yyyy by flatpickr, value stays yyyy-MM-dd for the server -->
+                <input asp-for="TransactionDate" type="text" asp-format="{0:yyyy-MM-dd}"
+                       placeholder="dd/mm/yyyy" class="form-control" />
             </div>
 
             <div class="mb-3">
