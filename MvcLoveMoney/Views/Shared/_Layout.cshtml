@@ -1,5 +1,5 @@
-﻿@using System.Globalization                                  @* NEW *@
-@using MvcLoveMoney.Configs                                  @* NEW *@
+﻿@using System.Globalization                                  
+
 <!DOCTYPE html>
 <html lang="en" style="scrollbar-gutter: stable;">
 <head>
@@ -25,13 +25,13 @@
 </head>
 <body>
     @{
-        // Current controller name, used to highlight the active menu item
-        string currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+            // Current controller name, used to highlight the active menu item
+            string currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
 
         // NEW: user initials for the avatar, e.g. "An Tran" → "AT"
-        string initials = string.Concat(
-            AppConfigs.UserName.Split(' ', StringSplitOptions.RemoveEmptyEntries)
-                               .Select(word => char.ToUpper(word[0])));
+        // string initials = string.Concat(
+        //     AppConfigs.UserName.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+        //                        .Select(word => char.ToUpper(word[0])));
     }
 
     @* REMOVED: the old small-screen top bar (its ☰ button is now inside the new header) *@
@@ -122,35 +122,8 @@
             @DateTime.Today.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)
         </div>
 
-        <!-- Profile -->
-        <div class="dropdown">
-            <button type="button"
-                    class="btn d-flex align-items-center gap-2 p-1 pe-3 rounded-pill bg-white shadow-sm border-0 dropdown-toggle"
-                    data-bs-toggle="dropdown" aria-expanded="false">
-                <span class="topbar-avatar d-inline-flex align-items-center justify-content-center rounded-circle bg-success-subtle text-success fw-bold small">
-                    @initials
-                </span>
-                <span class="d-none d-sm-block text-start lh-sm">
-                    <span class="d-block fw-semibold text-dark">@AppConfigs.UserName</span>
-                    <span class="d-block small text-secondary">@AppConfigs.Currency</span>
-                </span>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
-                <li>
-                    <a class="dropdown-item d-flex align-items-center gap-2"
-                       asp-controller="Settings" asp-action="Index">
-                        <i class="bi bi-gear"></i> Settings
-                    </a>
-                </li>
-                <li><hr class="dropdown-divider" /></li>
-                <li>
-                    <!-- TODO: connect to Logout when login is added -->
-                    <a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="javascript:void(0);">
-                        <i class="bi bi-box-arrow-right"></i> Log Out
-                    </a>
-                </li>
-            </ul>
-        </div>
+                <!-- Profile / Log in -->
+                <partial name="_LoginPartial" />
     </header>
 
             <!-- Page content (unchanged, only moved inside the right column) -->

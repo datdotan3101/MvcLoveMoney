@@ -1,0 +1,50 @@
+﻿@using MvcLoveMoney.Configs
+
+@if (User.Identity?.IsAuthenticated == true)
+{
+    // Name comes from the login cookie (ClaimTypes.Name)
+    string userName = User.Identity.Name ?? "";
+
+    // User initials for the avatar
+    string initials = string.Concat(
+        userName.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                .Select(word => char.ToUpper(word[0])));
+
+    <div class="dropdown">
+        <button type="button"
+                class="btn d-flex align-items-center gap-2 p-1 pe-3 rounded-pill bg-white shadow-sm border-0 dropdown-toggle"
+                data-bs-toggle="dropdown" aria-expanded="false">
+            <span class="topbar-avatar d-inline-flex align-items-center justify-content-center rounded-circle bg-success-subtle text-success fw-bold small">
+                @initials
+            </span>
+            <span class="d-none d-sm-block text-start lh-sm">
+                <span class="d-block fw-semibold text-dark">@userName</span>
+                <span class="d-block small text-secondary">@AppConfigs.Currency</span>
+            </span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
+            <li>
+                <a class="dropdown-item d-flex align-items-center gap-2"
+                   asp-controller="Settings" asp-action="Index">
+                    <i class="bi bi-gear"></i> Settings
+                </a>
+            </li>
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+                <!-- Logout must be POST + anti-forgery token (added automatically by the form tag helper) -->
+                <form asp-controller="Account" asp-action="Logout" method="post">
+                    <button type="submit" class="dropdown-item d-flex align-items-center gap-2 text-danger">
+                        <i class="bi bi-box-arrow-right"></i> Log Out
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </div>
+}
+else
+{
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary btn-sm" asp-controller="Account" asp-action="Login">Log in</a>
+        <a class="btn btn-primary btn-sm" asp-controller="Account" asp-action="Register">Sign up</a>
+    </div>
+}

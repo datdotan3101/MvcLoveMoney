@@ -10,7 +10,7 @@ namespace MvcLoveMoney.Configs
         // Category 
         public const int CategoryIcon = 50;   // vd: "bi-cash-coin"
         public const int ThemeColor = 7;    // vd: "#FF5733"
+        public const int EmailLength = 256;
 
-     
     }
 }

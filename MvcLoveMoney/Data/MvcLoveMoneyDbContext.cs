@@ -13,6 +13,7 @@ namespace MvcLoveMoney.Data
 
         public DbSet<Category> Categories { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<User> Users { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -66,6 +67,15 @@ namespace MvcLoveMoney.Data
                       .WithMany(c => c.Transactions)
                       .HasForeignKey(e => e.CategoryId)
                       .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Authentication( Login/ Register)
+
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.Property(u => u.FullName).HasMaxLength(MaxLengths.NameLength).IsRequired();
+                entity.Property(u => u.Email).HasMaxLength(MaxLengths.EmailLength).IsRequired();
+                entity.HasIndex(u => u.Email).IsUnique();
             });
         }
     }
