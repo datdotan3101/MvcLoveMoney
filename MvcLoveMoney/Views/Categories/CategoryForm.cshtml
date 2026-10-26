@@ -2,91 +2,91 @@
 @using MvcLoveMoney.Enums
 
 @{
- bool isCreate = Model.Id == 0;
- string actionName = isCreate ? "Create" : "Edit";
- string buttonName = isCreate ? "Create" : "Update";
+	bool isCreate = Model.Id == 0;
+	string actionName = isCreate ? "Create" : "Edit";
+	string buttonName = isCreate ? "Create" : "Update";
 
-string[] icons =
-    {
-        "bx bx-home", "bx bx-home-alt", "bx bx-box", "bx bx-medal",
-        "bx bx-file", "bx bx-palette", "bx bx-receipt", "bx bx-table",
-        "bx bx-bar-chart-alt", "bx bx-layer", "bx bx-map-alt", "bx bx-gift",
-        "bx bx-file-blank", "bx bx-lock-alt", "bx bx-error", "bx bx-error-circle"
-    };
+	string[] icons =
+		{
+		"bx bx-home", "bx bx-home-alt", "bx bx-box", "bx bx-medal",
+		"bx bx-file", "bx bx-palette", "bx bx-receipt", "bx bx-table",
+		"bx bx-bar-chart-alt", "bx bx-layer", "bx bx-map-alt", "bx bx-gift",
+		"bx bx-file-blank", "bx bx-lock-alt", "bx bx-error", "bx bx-error-circle"
+	};
 }
 
 <!-- Làm nổi bật icon đang được chọn -->
 <style>
-    .icons-list .icons-list-item {
-        cursor: pointer;
-        border-radius: 0.5rem;
-        transition: all 0.15s;
-    }
+	.icons-list .icons-list-item {
+		cursor: pointer;
+		border-radius: 0.5rem;
+		transition: all 0.15s;
+	}
 
-    .icons-list .icons-list-item:hover {
-        border-color: var(--bs-primary);
-    }
+		.icons-list .icons-list-item:hover {
+			border-color: var(--bs-primary);
+		}
 
-    .icons-list .icons-list-item.active {
-        background-color: var(--bs-primary);
-        border-color: var(--bs-primary);
-        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.3);
-        transform: scale(1.1);
-    }
+		.icons-list .icons-list-item.active {
+			background-color: var(--bs-primary);
+			border-color: var(--bs-primary);
+			box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.3);
+			transform: scale(1.1);
+		}
 
-    .icons-list .icons-list-item.active i {
-        color: #fff;
-        font-size: 1.4rem;
-    }
+			.icons-list .icons-list-item.active i {
+				color: #fff;
+				font-size: 1.4rem;
+			}
 </style>
 
 <div class="row">
 
-    <form id="formCategory" asp-action="@actionName" method="post" onsubmit="saveCategory(); return false;">
+	<form id="formCategory" asp-action="@actionName" method="post" onsubmit="saveCategory(); return false;">
 
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+		<div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-        @if(!isCreate)
-        {
-            <input type="hidden" asp-for="Id" class="form-control"/>
-        }
+		@if (!isCreate)
+		{
+			<input type="hidden" asp-for="Id" class="form-control" />
+		}
 
-        <div class="mb-3">
-            <label asp-for="CategoryType" class="form-label"></label>
-            <select asp-for="CategoryType" class="form-select"
-                    asp-items="Html.GetEnumSelectList<TransactionType>()"></select>
-            <span asp-validation-for="CategoryType" class="text-danger"></span>
-        </div>
+		<div class="mb-3">
+			<label asp-for="CategoryType" class="form-label"></label>
+			<select asp-for="CategoryType" class="form-select"
+					asp-items="Html.GetEnumSelectList<TransactionType>()"></select>
+			<span asp-validation-for="CategoryType" class="text-danger"></span>
+		</div>
 
-        <div class="mb-3">
-            <label asp-for="Name" class="form-label"></label>
-            <input asp-for="Name" class="form-control" />
-            <span asp-validation-for="Name" class="text-danger"></span>
-        </div>
+		<div class="mb-3">
+			<label asp-for="Name" class="form-label"></label>
+			<input asp-for="Name" class="form-control" />
+			<span asp-validation-for="Name" class="text-danger"></span>
+		</div>
 
-        <div class="mb-3">
-            <label asp-for="Icon" class="form-label"></label>
+		<div class="mb-3">
+			<label asp-for="Icon" class="form-label"></label>
 
-            <!-- Ô ẩn: lưu icon được chọn để gửi lên server -->
-            <input asp-for="Icon" type="hidden" />
-             <!-- Danh sách icon để bấm chọn -->
-            <ul class="icons-list list-unstyled d-flex flex-wrap gap-2">
-                @foreach (var icon in icons)
-                {
-                    <li class="icons-list-item @(icon == Model.Icon ? "active" : "")"
-                        data-icon="@icon" title="@icon">
-                        <i class="@icon"></i>
-                    </li>
-                }
-            </ul>     
-            <span asp-validation-for="Icon" class="text-danger"></span>
+			<!-- Ô ẩn: lưu icon được chọn để gửi lên server -->
+			<input asp-for="Icon" type="hidden" />
+			<!-- Danh sách icon để bấm chọn -->
+			<ul class="icons-list list-unstyled d-flex flex-wrap gap-2">
+				@foreach (var icon in icons)
+				{
+					<li class="icons-list-item @(icon == Model.Icon ? "active" : "")"
+						data-icon="@icon" title="@icon">
+						<i class="@icon"></i>
+					</li>
+				}
+			</ul>
+			<span asp-validation-for="Icon" class="text-danger"></span>
 
-             <div class="mb-3">
-                 <label  asp-for="ThemeColor" class="form-label fs-14 text-dark">Theme Color</label>
-                 <input  asp-for="ThemeColor" type="color" class="form-control w-25" id="form-text" placeholder="">
-                 <span asp-validation-for="ThemeColor" class="text-danger"></span>
-             </div>
-        </div>
-        <button class="btn btn-primary" type="submit">@buttonName</button>
-    </form>
+			<div class="mb-3">
+				<label asp-for="ThemeColor" class="form-label fs-14 text-dark">Theme Color</label>
+				<input asp-for="ThemeColor" type="color" class="form-control w-25" id="form-text" placeholder="">
+				<span asp-validation-for="ThemeColor" class="text-danger"></span>
+			</div>
+		</div>
+		<button class="btn btn-primary" type="submit">@buttonName</button>
+	</form>
 </div>
