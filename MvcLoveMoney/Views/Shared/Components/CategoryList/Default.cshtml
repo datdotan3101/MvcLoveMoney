@@ -32,11 +32,11 @@ else
                         <td>
                             <div class="hstack gap-2 flex-wrap">
                                 <button type="button" class="btn btn-sm btn-outline-warning"
-                                        onclick="openEditCategory(@item.Id)" title="Edit">
+                                        onclick="openEditCategory('@IdProtector.Protect(item.Id)')" title="Edit">
                                     <i class="bi bi-pencil-square"></i>
                                 </button>
                                 <button type="button" class="btn btn-sm btn-outline-danger"
-                                        onclick="openDeleteCategory(@item.Id)" title="Delete">
+                                        onclick="openDeleteCategory('@IdProtector.Protect(item.Id)')" title="Delete">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </div>

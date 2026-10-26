@@ -66,8 +66,10 @@ namespace MvcLoveMoney.Controllers
             return View();
         }
 
-        // Called by Ajax to re-render the table (with optional filter)
-        public IActionResult Reload(TransactionType? type, int? categoryId, DateTime? fromDate, DateTime? toDate, string? keyword)
+        // Called by Ajax to re-render the table (with optional filter and sort)
+        // sortBy: name | category | date | amount,  sortDir: asc | desc
+        public IActionResult Reload(TransactionType? type, int? categoryId, DateTime? fromDate, DateTime? toDate, string? keyword,
+            string? sortBy, string? sortDir)
         {
             // If the user picks From > To, swap them
             if (fromDate.HasValue && toDate.HasValue && fromDate > toDate)
@@ -75,7 +77,7 @@ namespace MvcLoveMoney.Controllers
                 (fromDate, toDate) = (toDate, fromDate);
             }
 
-            return ViewComponent("TransactionList", new { type, categoryId, fromDate, toDate, keyword });
+            return ViewComponent("TransactionList", new { type, categoryId, fromDate, toDate, keyword, sortBy, sortDir });
         }
 
         // GET: Transactions/GetCategories?type=1
@@ -183,7 +185,7 @@ namespace MvcLoveMoney.Controllers
         // ========== EDIT ==========
 
         // GET: Transactions/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit([ModelBinder(typeof(ProtectedIdModelBinder))] int? id)
         {
             if (id == null) return NotFound();
 
@@ -247,7 +249,7 @@ namespace MvcLoveMoney.Controllers
         // ========== DELETE ==========
 
         // GET: Transactions/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete([ModelBinder(typeof(ProtectedIdModelBinder))] int? id)
         {
             if (id == null) return NotFound();
 
@@ -276,7 +278,7 @@ namespace MvcLoveMoney.Controllers
         // POST: Transactions/Delete
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed([ModelBinder(typeof(ProtectedIdModelBinder))] int id)
         {
             var transaction = await _context.Transactions
                 .FirstOrDefaultAsync(t => t.Id == id && t.UserId == UserId);

@@ -42,10 +42,9 @@ namespace MvcLoveMoney.Controllers
 
         // GET: Account/Register
         [AllowAnonymous]
+        [RedirectIfAuthenticated]
         public IActionResult Register()
         {
-            if (User.Identity?.IsAuthenticated == true)
-                return RedirectToAction("Index", "Home");
             return View();
         }
 
@@ -82,11 +81,9 @@ namespace MvcLoveMoney.Controllers
 
         // GET: Account/Login
         [AllowAnonymous]
+        [RedirectIfAuthenticated]
         public IActionResult Login(string? returnUrl = null)
         {
-            if (User.Identity?.IsAuthenticated == true)
-                return RedirectToAction("Index", "Home");
-
             ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
@@ -208,6 +205,7 @@ namespace MvcLoveMoney.Controllers
 
         // GET: Account/ForgotPassword
         [AllowAnonymous]
+        [RedirectIfAuthenticated]
         public IActionResult ForgotPassword()
         {
             return View();
@@ -246,6 +244,7 @@ namespace MvcLoveMoney.Controllers
 
         // GET: Account/VerifyOtp?email=...
         [AllowAnonymous]
+        [RedirectIfAuthenticated]
         public IActionResult VerifyOtp(string? email)
         {
             if (string.IsNullOrWhiteSpace(email))
@@ -310,6 +309,7 @@ namespace MvcLoveMoney.Controllers
 
         // GET: Account/ResetPassword  (only reachable right after a correct code)
         [AllowAnonymous]
+        [RedirectIfAuthenticated]
         public IActionResult ResetPassword()
         {
             if (TempData["ResetEmail"] is not string email || TempData["ResetToken"] is not string token)

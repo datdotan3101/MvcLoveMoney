@@ -40,7 +40,7 @@ public class CategoriesController : Controller
     }
 
     // GET: CATEGORYS/Details/5
-    public async Task<IActionResult> Details(int? id)
+    public async Task<IActionResult> Details([ModelBinder(typeof(ProtectedIdModelBinder))] int? id)
     {
         if (id == null)
         {
@@ -121,7 +121,7 @@ public class CategoriesController : Controller
     }
 
     // GET: CATEGORYS/Edit/5
-    public async Task<IActionResult> Edit(int? id)
+    public async Task<IActionResult> Edit([ModelBinder(typeof(ProtectedIdModelBinder))] int? id)
     {
         if (id == null)
         {
@@ -187,7 +187,7 @@ public class CategoriesController : Controller
     }
 
     // GET: CATEGORYS/Delete/5
-    public async Task<IActionResult> Delete(int? id)
+    public async Task<IActionResult> Delete([ModelBinder(typeof(ProtectedIdModelBinder))] int? id)
     {
         if (id == null)
         {
@@ -218,7 +218,7 @@ public class CategoriesController : Controller
     // POST: CATEGORYS/Delete/5
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteConfirmed(int? id)
+    public async Task<IActionResult> DeleteConfirmed([ModelBinder(typeof(ProtectedIdModelBinder))] int? id)
     {
         var category = await _context.Categories
             .FirstOrDefaultAsync(c => c.Id == id && c.UserId == UserId);

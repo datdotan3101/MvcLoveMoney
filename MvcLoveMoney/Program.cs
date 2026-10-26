@@ -41,6 +41,9 @@ builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 // Forgot-password OTPs are kept in memory (lost when the app restarts)
 builder.Services.AddMemoryCache();
 
+// Encrypts database Ids shown in URLs / forms
+builder.Services.AddSingleton<IIdProtector, IdProtector>();
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 

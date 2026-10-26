@@ -118,6 +118,21 @@
 <link rel="stylesheet" href="~/assets/libs/flatpickr/flatpickr.min.css" />
 <style>
     .flatpickr-wrapper { width: 100%; }   /* static picker inside the modal: keep full width */
+
+    /* Clickable column headers (sort) */
+    .sort-header {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0;
+        border: 0;
+        background: none;
+        font: inherit;
+        color: inherit;
+        cursor: pointer;
+    }
+    .sort-header:hover { color: var(--bs-primary); }
+    .sort-header:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 2px; border-radius: 2px; }
 </style>
 <script src="~/assets/libs/flatpickr/flatpickr.min.js"></script>
 <script>
@@ -146,6 +161,22 @@
     let currentFromDate = "";
     let currentToDate = "";
     let currentKeyword = "";
+
+    // ---------- Current sort (clicked column header) ----------
+    let currentSortBy = "";     // "", "name", "category", "date", "amount"
+    let currentSortDir = "";    // "asc" or "desc"
+
+    // 1st click on a column: ascending (A→Z, oldest, smallest). Next click on the same column: flip.
+    function sortTransactions(column) {
+        if (currentSortBy === column) {
+            currentSortDir = currentSortDir === "asc" ? "desc" : "asc";
+        } else {
+            currentSortBy = column;
+            currentSortDir = "asc";
+        }
+        reloadTransactions();
+    }
+
     const currencyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'VND' });
     
     // ---------- Tabs ----------
@@ -275,7 +306,9 @@
                 categoryId: currentCategoryId,
                 fromDate: currentFromDate,
                 toDate: currentToDate,
-                keyword: currentKeyword
+                keyword: currentKeyword,
+                sortBy: currentSortBy,
+                sortDir: currentSortDir
             },
             success: function (html) {
                 document.getElementById("divTransactionList").innerHTML = html;

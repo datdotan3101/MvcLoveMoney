@@ -1,4 +1,19 @@
 ﻿@model List<TransactionVM>
+@{
+    // Which column is sorted (set by TransactionListViewComponent)
+    string? sortBy = ViewData["SortBy"] as string;
+    bool ascending = (ViewData["SortDir"] as string) == "asc";
+
+    // Arrow next to a header: faded ⇅ when not sorted, A→Z / Z→A (or 1→9 / 9→1) when sorted
+    string SortIcon(string column, bool isText)
+    {
+        if (sortBy != column) return "bi-arrow-down-up opacity-25";
+        string kind = isText ? "alpha" : "numeric";
+        return ascending ? $"bi-sort-{kind}-down" : $"bi-sort-{kind}-up";
+    }
+
+    string AriaSort(string column) => sortBy != column ? "none" : (ascending ? "ascending" : "descending");
+}
 
 @if (!Model.Any())
 {
@@ -10,11 +25,28 @@ else
         <table class="table text-nowrap table-bordered align-middle">
             <thead>
                 <tr>
-                    <th scope="col" style="width: 15%">Transaction</th>
-                    <th scope="col" style="width: 13%;">Category</th>
+                    @* Click a header to sort: 1st click A→Z / low→high, 2nd click Z→A / high→low *@
+                    <th scope="col" style="width: 15%" aria-sort="@AriaSort("name")">
+                        <button type="button" class="sort-header" onclick="sortTransactions('name')">
+                            Transaction <i class="bi @SortIcon("name", true)"></i>
+                        </button>
+                    </th>
+                    <th scope="col" style="width: 13%;" aria-sort="@AriaSort("category")">
+                        <button type="button" class="sort-header" onclick="sortTransactions('category')">
+                            Category <i class="bi @SortIcon("category", true)"></i>
+                        </button>
+                    </th>
                     <th scope="col" style="width: 9%;">Type</th>
-                    <th scope="col" style="width: 10%;">Date</th>
-                    <th scope="col" style="width: 10%;" class="text-end">Amount</th>
+                    <th scope="col" style="width: 10%;" aria-sort="@AriaSort("date")">
+                        <button type="button" class="sort-header" onclick="sortTransactions('date')">
+                            Date <i class="bi @SortIcon("date", false)"></i>
+                        </button>
+                    </th>
+                    <th scope="col" style="width: 10%;" class="text-end" aria-sort="@AriaSort("amount")">
+                        <button type="button" class="sort-header" onclick="sortTransactions('amount')">
+                            Amount <i class="bi @SortIcon("amount", false)"></i>
+                        </button>
+                    </th>
                     <th scope="col">Note</th>
                     <th scope="col" style="width: 100px;">Action</th>
                 </tr>
@@ -38,11 +70,11 @@ else
                         <td>
                             <div class="hstack gap-2 flex-wrap">
                                 <button type="button" class="btn btn-sm btn-outline-warning"
-                                        onclick="openEditTransaction(@item.Id)" title="Edit">
+                                        onclick="openEditTransaction('@IdProtector.Protect(item.Id)')" title="Edit">
                                     <i class="bi bi-pencil-square"></i>
                                 </button>
                                 <button type="button" class="btn btn-sm btn-outline-danger"
-                                        onclick="openDeleteTransaction(@item.Id)" title="Delete">
+                                        onclick="openDeleteTransaction('@IdProtector.Protect(item.Id)')" title="Delete">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </div>

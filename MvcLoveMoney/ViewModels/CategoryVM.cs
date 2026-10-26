@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MvcLoveMoney.Configs;
 using MvcLoveMoney.Enums;
+using MvcLoveMoney.Helpers;
 using System.ComponentModel.DataAnnotations;
 
 namespace MvcLoveMoney.ViewModels
@@ -8,6 +9,8 @@ namespace MvcLoveMoney.ViewModels
     [Bind("Id,CategoryType,Name,Icon,ThemeColor")]
     public class CategoryVM
     {
+        // Sent to the browser encrypted (IIdProtector), decrypted again when the form is posted
+        [ModelBinder(typeof(ProtectedIdModelBinder))]
         public int Id { get; set; }
 
         [Display(Name = "Type")]
