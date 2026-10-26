@@ -1,16 +1,22 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MvcLoveMoney.Data;
 using MvcLoveMoney.Enums;
+using MvcLoveMoney.Helpers;
 using MvcLoveMoney.Models;
 using MvcLoveMoney.ViewModels;
 
 namespace MvcLoveMoney.Controllers
 {
+    [Authorize]
     public class TransactionsController : Controller
     {
         private readonly MvcLoveMoneyDbContext _context;
+
+        // Id of the logged-in user: every query below is limited to their own data
+        private int UserId => User.GetUserId();
 
         public TransactionsController(MvcLoveMoneyDbContext context)
         {
@@ -23,7 +29,7 @@ namespace MvcLoveMoney.Controllers
         private async Task LoadCategoriesAsync(TransactionVM transactionVM)
         {
             transactionVM.Categories = await _context.Categories
-                .Where(t => t.CategoryType == transactionVM.TransactionType)
+                .Where(c => c.UserId == UserId && c.CategoryType == transactionVM.TransactionType)
                 .OrderBy(c => c.CategoryType)
                 .Select(c => new SelectListItem
                 {
@@ -39,7 +45,8 @@ namespace MvcLoveMoney.Controllers
             // No category selected → [Required] on CategoryId already reports this
             if (transactionVM.CategoryId == null) return;
 
-            var category = await _context.Categories.FindAsync(transactionVM.CategoryId.Value);
+            var category = await _context.Categories
+                .FirstOrDefaultAsync(c => c.Id == transactionVM.CategoryId.Value && c.UserId == UserId);
 
             if (category == null)
             {
@@ -59,8 +66,10 @@ namespace MvcLoveMoney.Controllers
             return View();
         }
 
-        // Called by Ajax to re-render the table (with optional filter)
-        public IActionResult Reload(TransactionType? type, int? categoryId, DateTime? fromDate, DateTime? toDate, string? keyword)
+        // Called by Ajax to re-render the table (with optional filter, sort and page)
+        // sortBy: name | category | date | amount,  sortDir: asc | desc
+        public IActionResult Reload(TransactionType? type, int? categoryId, DateTime? fromDate, DateTime? toDate, string? keyword,
+            string? sortBy, string? sortDir, int page = 1, int pageSize = PagedListVM.DefaultPageSize)
         {
             // If the user picks From > To, swap them
             if (fromDate.HasValue && toDate.HasValue && fromDate > toDate)
@@ -68,14 +77,14 @@ namespace MvcLoveMoney.Controllers
                 (fromDate, toDate) = (toDate, fromDate);
             }
 
-            return ViewComponent("TransactionList", new { type, categoryId, fromDate, toDate, keyword });
+            return ViewComponent("TransactionList", new { type, categoryId, fromDate, toDate, keyword, sortBy, sortDir, page, pageSize });
         }
 
         // GET: Transactions/GetCategories?type=1
         // Called by Ajax when the user changes the Type dropdown
         public async Task<IActionResult> GetCategories(TransactionType? type)
         {
-            var query = _context.Categories.AsQueryable();
+            var query = _context.Categories.Where(c => c.UserId == UserId);
 
             if (type.HasValue)
             {
@@ -101,7 +110,7 @@ namespace MvcLoveMoney.Controllers
                 (fromDate, toDate) = (toDate, fromDate);
             }
 
-            var query = _context.Transactions.AsQueryable();
+            var query = _context.Transactions.Where(t => t.UserId == UserId);
 
             if (fromDate.HasValue)
             {
@@ -156,7 +165,8 @@ namespace MvcLoveMoney.Controllers
                         Amount = transactionVM.Amount!.Value,
                         TransactionDate = transactionVM.TransactionDate,
                         Note = transactionVM.Note?.Trim(),
-                        CategoryId = transactionVM.CategoryId!.Value
+                        CategoryId = transactionVM.CategoryId!.Value,
+                        UserId = UserId
                     };
                     await _context.Transactions.AddAsync(newTransaction);
                     await _context.SaveChangesAsync();
@@ -175,12 +185,12 @@ namespace MvcLoveMoney.Controllers
         // ========== EDIT ==========
 
         // GET: Transactions/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit([ModelBinder(typeof(ProtectedIdModelBinder))] int? id)
         {
             if (id == null) return NotFound();
 
             var transactionVM = await _context.Transactions
-                .Where(t => t.Id == id)
+                .Where(t => t.Id == id && t.UserId == UserId)
                 .Select(t => new TransactionVM
                 {
                     Id = t.Id,
@@ -209,7 +219,8 @@ namespace MvcLoveMoney.Controllers
 
             if (ModelState.IsValid)
             {
-                var transaction = await _context.Transactions.FindAsync(transactionVM.Id);
+                var transaction = await _context.Transactions
+                    .FirstOrDefaultAsync(t => t.Id == transactionVM.Id && t.UserId == UserId);
                 if (transaction == null) return NotFound();
 
                 // Copy values from ViewModel to entity
@@ -238,12 +249,12 @@ namespace MvcLoveMoney.Controllers
         // ========== DELETE ==========
 
         // GET: Transactions/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete([ModelBinder(typeof(ProtectedIdModelBinder))] int? id)
         {
             if (id == null) return NotFound();
 
             var transactionVM = await _context.Transactions
-                .Where(t => t.Id == id)
+                .Where(t => t.Id == id && t.UserId == UserId)
                 .Select(t => new TransactionVM
                 {
                     Id = t.Id,
@@ -267,9 +278,10 @@ namespace MvcLoveMoney.Controllers
         // POST: Transactions/Delete
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed([ModelBinder(typeof(ProtectedIdModelBinder))] int id)
         {
-            var transaction = await _context.Transactions.FindAsync(id);
+            var transaction = await _context.Transactions
+                .FirstOrDefaultAsync(t => t.Id == id && t.UserId == UserId);
             if (transaction == null)
                 return Json(new { isOK = false, message = "Transaction not found." });
 

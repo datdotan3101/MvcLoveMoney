@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MvcLoveMoney.Configs;
+using MvcLoveMoney.Helpers;
 using System.ComponentModel.DataAnnotations;
 
 namespace MvcLoveMoney.ViewModels
@@ -18,7 +19,8 @@ namespace MvcLoveMoney.ViewModels
         public string Email { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Password is required.")]
-        [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least {2} characters.")]
+        [StringLength(100)]
+        [StrongPassword]
         [DataType(DataType.Password)]
         public string Password { get; set; } = string.Empty;
 

@@ -37,6 +37,12 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/password-toggle.js" asp-append-version="true"></script>
+    <script>
+        // Back button may show this page from the browser cache without asking the server.
+        // Reload it so a logged-in user is sent back to the dashboard.
+        window.addEventListener('pageshow', function (e) { if (e.persisted) location.reload(); });
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

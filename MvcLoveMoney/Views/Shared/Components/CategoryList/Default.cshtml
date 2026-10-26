@@ -1,6 +1,6 @@
-﻿@model List<CategoryVM>
+﻿@model PagedListVM<CategoryVM>
 
-@if(!Model.Any())
+@if(Model.TotalCount == 0)
 {
     <p class="text-muted">Category Empty</p>
 }
@@ -17,7 +17,7 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach(var item in Model)
+                @foreach(var item in Model.Items)
                 {
                     <tr>
                         <th scope="row">
@@ -32,11 +32,11 @@ else
                         <td>
                             <div class="hstack gap-2 flex-wrap">
                                 <button type="button" class="btn btn-sm btn-outline-warning"
-                                        onclick="openEditCategory(@item.Id)" title="Edit">
+                                        onclick="openEditCategory('@IdProtector.Protect(item.Id)')" title="Edit">
                                     <i class="bi bi-pencil-square"></i>
                                 </button>
                                 <button type="button" class="btn btn-sm btn-outline-danger"
-                                        onclick="openDeleteCategory(@item.Id)" title="Delete">
+                                        onclick="openDeleteCategory('@IdProtector.Protect(item.Id)')" title="Delete">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </div>
@@ -45,6 +45,8 @@ else
                 }
             </tbody>
         </table>
-</div>
-    }
+    </div>
+
+    <partial name="_Pagination" model="Model" />
+}
 

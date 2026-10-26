@@ -94,3 +94,13 @@
             justify-content: center !important;
         }
 }
+
+/* ---------- Template fixes ----------
+   The template's styles.min.css turns .sticky-top into a static block with
+   -1rem side margins (a docs-demo rule). On the header this pushed it 16px past
+   both edges of the page → horizontal scrollbar. Restore Bootstrap's behaviour. */
+.sticky-top {
+    position: sticky;
+    top: 0;
+    margin: 0;
+}

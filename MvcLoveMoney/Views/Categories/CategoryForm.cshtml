@@ -48,7 +48,7 @@
 
 		@if (!isCreate)
 		{
-			<input type="hidden" asp-for="Id" class="form-control" />
+			<input type="hidden" id="Id" name="Id" value="@IdProtector.Protect(Model.Id)" />
 		}
 
 		<div class="mb-3">

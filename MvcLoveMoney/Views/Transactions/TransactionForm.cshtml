@@ -11,7 +11,7 @@
         <form id="formTransaction" asp-action="@actionString" method="post" onsubmit="return false;">
             @if (!isCreate)
             {
-                <input type="hidden" asp-for="Id" />
+                <input type="hidden" id="Id" name="Id" value="@IdProtector.Protect(Model.Id)" />
             }
 
             <div asp-validation-summary="All" class="text-danger"></div>

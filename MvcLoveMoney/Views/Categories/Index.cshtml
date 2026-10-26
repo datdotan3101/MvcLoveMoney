@@ -141,9 +141,17 @@
 			$.ajax({
 				url: '/Categories/Reload',
 				type: 'GET',
-				data: { type: currentType },          // "" → null → All
+				data: {
+					type: currentType,                // "" → null → All
+					page: currentPage,
+					pageSize: currentPageSize
+				},
 				success: function (html) {
 					document.getElementById("divCategoryList").innerHTML = html;
+
+					// The server may move to another page (e.g. the last row of the last page was deleted)
+					let pager = document.getElementById("listPager");
+					currentPage = pager ? parseInt(pager.dataset.page, 10) : 1;
 				},
 				error: function (xhr, status, error) {
 					console.error("Error:", status, error);
@@ -157,8 +165,24 @@
 				.forEach(function (b) { b.classList.remove('active'); });
 			button.classList.add('active');
 
-			// Remember the filter and reload the table
+			// Remember the filter and reload the table from the first page
 			currentType = type;
+			currentPage = 1;
+			reloadCategories();
+		}
+
+		// ---------- Pagination (buttons are in Views/Shared/_Pagination.cshtml) ----------
+		let currentPage = 1;
+		let currentPageSize = 10;   // 10, 25, 50, 75, 100
+
+		function goToPage(page) {
+			currentPage = page;
+			reloadCategories();
+		}
+
+		function changePageSize(size) {
+			currentPageSize = parseInt(size, 10);
+			currentPage = 1;
 			reloadCategories();
 		}
 
