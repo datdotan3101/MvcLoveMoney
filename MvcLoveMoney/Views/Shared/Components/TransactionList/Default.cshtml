@@ -1,4 +1,4 @@
-﻿@model List<TransactionVM>
+﻿@model PagedListVM<TransactionVM>
 @{
     // Which column is sorted (set by TransactionListViewComponent)
     string? sortBy = ViewData["SortBy"] as string;
@@ -15,7 +15,7 @@
     string AriaSort(string column) => sortBy != column ? "none" : (ascending ? "ascending" : "descending");
 }
 
-@if (!Model.Any())
+@if (Model.TotalCount == 0)
 {
     <p class="text-muted">No transactions yet.</p>
 }
@@ -52,7 +52,7 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in Model)
+                @foreach (var item in Model.Items)
                 {
                     bool isIncome = item.TransactionType == TransactionType.Income;
                     <tr>
@@ -84,4 +84,6 @@ else
             </tbody>
         </table>
     </div>
+
+    <partial name="_Pagination" model="Model" />
 }

@@ -1,6 +1,6 @@
-﻿@model List<CategoryVM>
+﻿@model PagedListVM<CategoryVM>
 
-@if(!Model.Any())
+@if(Model.TotalCount == 0)
 {
     <p class="text-muted">Category Empty</p>
 }
@@ -17,7 +17,7 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach(var item in Model)
+                @foreach(var item in Model.Items)
                 {
                     <tr>
                         <th scope="row">
@@ -45,6 +45,8 @@ else
                 }
             </tbody>
         </table>
-</div>
-    }
+    </div>
+
+    <partial name="_Pagination" model="Model" />
+}
 

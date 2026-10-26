@@ -33,10 +33,10 @@ public class CategoriesController : Controller
     }
 
 
-    // Ajax gọi để vẽ lại bảng
-    public IActionResult Reload(TransactionType? type)
+    // Ajax gọi để vẽ lại bảng (kèm bộ lọc và trang)
+    public IActionResult Reload(TransactionType? type, int page = 1, int pageSize = PagedListVM.DefaultPageSize)
     {
-        return ViewComponent("CategoryList", new { type });
+        return ViewComponent("CategoryList", new { type, page, pageSize });
     }
 
     // GET: CATEGORYS/Details/5

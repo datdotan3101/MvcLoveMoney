@@ -20,7 +20,8 @@ namespace MvcLoveMoney.ViewComponents
 
         public async Task<IViewComponentResult> InvokeAsync(TransactionType? type = null, int? categoryId = null,
             DateTime? fromDate = null, DateTime? toDate = null, string? keyword = null,
-            string? sortBy = null, string? sortDir = null)
+            string? sortBy = null, string? sortDir = null,
+            int page = 1, int pageSize = PagedListVM.DefaultPageSize)
         {
             // Only the logged-in user's transactions
             var userId = UserClaimsPrincipal.GetUserId();
@@ -79,8 +80,7 @@ namespace MvcLoveMoney.ViewComponents
             ViewData["SortBy"] = sortBy is "name" or "category" or "date" or "amount" ? sortBy : null;
             ViewData["SortDir"] = ascending ? "asc" : "desc";
 
-            var transactions = await ordered
-                .Select(t => new TransactionVM
+            var rows = ordered.Select(t => new TransactionVM
             {
                 Id = t.Id,
                 TransactionType = t.TransactionType,
@@ -92,9 +92,12 @@ namespace MvcLoveMoney.ViewComponents
                 CategoryName = t.Category!.Name,          
                 CategoryIcon = t.Category.Icon,
                 CategoryThemeColor = t.Category.ThemeColor
-            }).ToListAsync();
+            });
 
-            return View(transactions);
+            // ===== Paging: only the requested page is loaded =====
+            var pagedList = await PagedListVM<TransactionVM>.CreateAsync(rows, page, pageSize);
+
+            return View(pagedList);
         }
     }
 }

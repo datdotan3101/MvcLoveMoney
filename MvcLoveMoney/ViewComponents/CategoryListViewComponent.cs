@@ -21,7 +21,8 @@ namespace MvcLoveMoney.ViewComponents
 
         // InvokeAsync
 
-        public async Task<IViewComponentResult> InvokeAsync(TransactionType? type = null)
+        public async Task<IViewComponentResult> InvokeAsync(TransactionType? type = null,
+            int page = 1, int pageSize = PagedListVM.DefaultPageSize)
         {
             // Only the logged-in user's categories
             var userId = UserClaimsPrincipal.GetUserId();
@@ -31,9 +32,10 @@ namespace MvcLoveMoney.ViewComponents
                 query = query.Where(c => c.CategoryType == type.Value);
             }
 
-            var categories = await query
+            var rows = query
                 .OrderBy(c => c.CategoryType)
                 .ThenBy(c => c.Name)
+                .ThenBy(c => c.Id)
                 .Select(c => new CategoryVM
                 {
                     Id = c.Id,
@@ -41,10 +43,12 @@ namespace MvcLoveMoney.ViewComponents
                     Name = c.Name,
                     Icon = c.Icon,
                     ThemeColor = c.ThemeColor
-                })
-                .ToListAsync();
+                });
 
-            return View(categories); // → Views/Shared/Components/CategoryList/Default.cshtml
+            // Paging: only the requested page is loaded
+            var pagedList = await PagedListVM<CategoryVM>.CreateAsync(rows, page, pageSize);
+
+            return View(pagedList); // → Views/Shared/Components/CategoryList/Default.cshtml
         }
 
     }

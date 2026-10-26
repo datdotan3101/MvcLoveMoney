@@ -66,10 +66,10 @@ namespace MvcLoveMoney.Controllers
             return View();
         }
 
-        // Called by Ajax to re-render the table (with optional filter and sort)
+        // Called by Ajax to re-render the table (with optional filter, sort and page)
         // sortBy: name | category | date | amount,  sortDir: asc | desc
         public IActionResult Reload(TransactionType? type, int? categoryId, DateTime? fromDate, DateTime? toDate, string? keyword,
-            string? sortBy, string? sortDir)
+            string? sortBy, string? sortDir, int page = 1, int pageSize = PagedListVM.DefaultPageSize)
         {
             // If the user picks From > To, swap them
             if (fromDate.HasValue && toDate.HasValue && fromDate > toDate)
@@ -77,7 +77,7 @@ namespace MvcLoveMoney.Controllers
                 (fromDate, toDate) = (toDate, fromDate);
             }
 
-            return ViewComponent("TransactionList", new { type, categoryId, fromDate, toDate, keyword, sortBy, sortDir });
+            return ViewComponent("TransactionList", new { type, categoryId, fromDate, toDate, keyword, sortBy, sortDir, page, pageSize });
         }
 
         // GET: Transactions/GetCategories?type=1

@@ -1,0 +1,58 @@
+@model PagedListVM
+@* Pagination bar under a table: "Show [10] per page" · "Page x of y" · page buttons.
+   The page that uses it must define the JS functions goToPage(page) and changePageSize(size).
+   data-page = the page the server really showed (it may move an out-of-range page). *@
+
+<div id="listPager" data-page="@Model.Page"
+     class="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-3">
+    <div class="d-flex flex-wrap align-items-center gap-3 small text-secondary">
+        <div class="d-flex align-items-center gap-2">
+            <label for="pageSize" class="text-nowrap mb-0">Show</label>
+            <select id="pageSize" class="form-select form-select-sm w-auto" onchange="changePageSize(this.value)">
+                @foreach (var size in PagedListVM.PageSizeOptions)
+                {
+                    <option value="@size" selected="@(size == Model.PageSize)">@size</option>
+                }
+            </select>
+            <span class="text-nowrap">per page</span>
+        </div>
+        <span class="text-nowrap">Page @Model.Page of @Model.TotalPages</span>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav aria-label="Pages">
+            <ul class="pagination pagination-sm mb-0">
+                <li class="page-item @(Model.Page == 1 ? "disabled" : "")">
+                    <button type="button" class="page-link" onclick="goToPage(@(Model.Page - 1))" aria-label="Previous page">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                </li>
+
+                @foreach (var number in Model.PageNumbers())
+                {
+                    if (number == null)
+                    {
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                    }
+                    else if (number == Model.Page)
+                    {
+                        <li class="page-item active" aria-current="page"><span class="page-link">@number</span></li>
+                    }
+                    else
+                    {
+                        <li class="page-item">
+                            <button type="button" class="page-link" onclick="goToPage(@number)">@number</button>
+                        </li>
+                    }
+                }
+
+                <li class="page-item @(Model.Page == Model.TotalPages ? "disabled" : "")">
+                    <button type="button" class="page-link" onclick="goToPage(@(Model.Page + 1))" aria-label="Next page">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </li>
+            </ul>
+        </nav>
+    }
+</div>
